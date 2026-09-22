@@ -1,0 +1,23 @@
+# Hard Guardrails Configuration (Non-LLM deterministic rules)
+risk_limits:
+  max_portfolio_risk_pct: 2.0        # Max account balance risked per single trade (2%)
+  max_position_size_pct: 15.0        # Max position value relative to total equity (15%)
+  max_open_positions: 3              # Max concurrent open positions
+  max_daily_drawdown_pct: 4.0        # Kill switch triggered if daily drawdown >= 4%
+  max_total_drawdown_pct: 10.0       # Complete halt if total equity drawdown >= 10%
+  min_risk_reward_ratio: 1.5         # Minimum required RR ratio (Take Profit / Stop Loss)
+  default_stop_loss_pct: 2.0         # Default SL distance if agent provides invalid SL (2%)
+  default_take_profit_pct: 4.0       # Default TP distance (4%)
+  circuit_breaker:
+    enabled: true
+    max_price_change_15m_pct: 6.0    # If price swings > 6% in 15m, pause trading for cooldown
+    cooldown_period_minutes: 60      # Cooldown time
+    max_spread_pct: 0.5              # Pause if bid-ask spread > 0.5% (liquidity crunch)
+paper_trading:
+  initial_balance_usdt: 10000.0      # Starting paper balance: $10,000 USDT
+  taker_fee_pct: 0.05                # 0.05% taker fee
+  maker_fee_pct: 0.02                # 0.02% maker fee
+  slippage_pct: 0.03                 # 0.03% estimated slippage
+debate:
+  divergence_threshold: 0.35         # Belief variance threshold to trigger Bull vs Bear debate
+  max_debate_rounds: 2               # Maximum rounds of debate (preserves token cost & latency)

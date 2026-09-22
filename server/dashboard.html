@@ -1,0 +1,2589 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tauric AI | Crypto Multi-Agent Trading Terminal</title>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --bg-base: #080b11;
+            --bg-surface: #0f1523;
+            --bg-card: #151d30;
+            --bg-card-hover: #1c2742;
+            --border: #212c45;
+            --border-light: #2d3c5e;
+            
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            
+            --accent-green: #10b981;
+            --accent-green-bg: rgba(16, 185, 129, 0.12);
+            --accent-green-glow: rgba(16, 185, 129, 0.25);
+            
+            --accent-red: #ef4444;
+            --accent-red-bg: rgba(239, 68, 68, 0.12);
+            --accent-red-glow: rgba(239, 68, 68, 0.25);
+            
+            --accent-blue: #3b82f6;
+            --accent-blue-bg: rgba(59, 130, 246, 0.12);
+            --accent-purple: #8b5cf6;
+            --accent-purple-bg: rgba(139, 92, 246, 0.12);
+            --accent-amber: #f59e0b;
+            --accent-amber-bg: rgba(245, 158, 11, 0.12);
+            
+            --radius-sm: 6px;
+            --radius-md: 10px;
+            --radius-lg: 14px;
+            --radius-xl: 18px;
+            
+            --font-sans: 'Plus Jakarta Sans', -apple-system, sans-serif;
+            --font-mono: 'JetBrains Mono', monospace;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background-color: var(--bg-base);
+            color: var(--text-primary);
+            font-family: var(--font-sans);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            overflow-x: hidden;
+        }
+
+        /* -------------------------------------------------------------
+           TOP HEADER NAVIGATION BAR
+           ------------------------------------------------------------- */
+        header {
+            background: rgba(15, 21, 35, 0.92);
+            backdrop-filter: blur(14px);
+            border-bottom: 1px solid var(--border);
+            padding: 10px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            cursor: pointer;
+        }
+
+        .logo-badge {
+            background: linear-gradient(135deg, #3b82f6, #8b5cf6);
+            color: white;
+            font-weight: 800;
+            font-size: 13px;
+            padding: 6px 11px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.8px;
+            box-shadow: 0 0 16px rgba(59, 130, 246, 0.45);
+        }
+
+        .brand-text {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .brand-title {
+            font-size: 16px;
+            font-weight: 800;
+            letter-spacing: -0.3px;
+            color: var(--text-primary);
+        }
+
+        .brand-subtitle {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+        }
+
+        /* Tabs Navigation */
+        .nav-tabs {
+            display: flex;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            padding: 4px;
+            border-radius: var(--radius-md);
+            gap: 4px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-secondary);
+            font-family: var(--font-sans);
+            font-size: 13px;
+            font-weight: 600;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .tab-btn.active {
+            background: var(--accent-blue);
+            color: #ffffff;
+            box-shadow: 0 2px 10px rgba(59, 130, 246, 0.35);
+        }
+
+        .tab-badge {
+            background: rgba(255, 255, 255, 0.2);
+            padding: 2px 6px;
+            border-radius: 10px;
+            font-size: 10.5px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .tab-btn.active .tab-badge {
+            background: rgba(0, 0, 0, 0.25);
+            color: white;
+        }
+
+        /* Header Right Info Chips */
+        .header-right {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .info-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            padding: 6px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+        }
+
+        .info-pill-label {
+            color: var(--text-muted);
+            font-size: 11px;
+            text-transform: uppercase;
+        }
+
+        .info-pill-val {
+            font-family: var(--font-mono);
+            font-weight: 700;
+        }
+
+        .pulse-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: var(--accent-green);
+            box-shadow: 0 0 8px var(--accent-green);
+            animation: pulse-dot 2s infinite;
+        }
+
+        @keyframes pulse-dot {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.4; transform: scale(0.85); }
+        }
+
+        .btn-analyze-fast {
+            background: linear-gradient(135deg, #2563eb, #7c3aed);
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 12.5px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+        }
+
+        .btn-analyze-fast:hover {
+            opacity: 0.92;
+            transform: translateY(-1px);
+        }
+
+        .btn-analyze-fast:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* -------------------------------------------------------------
+           MAIN CONTENT AREA & TAB VIEWS
+           ------------------------------------------------------------- */
+        main {
+            flex: 1;
+            padding: 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        .tab-pane {
+            display: none;
+            animation: fadeIn 0.25s ease-out;
+        }
+
+        .tab-pane.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* -------------------------------------------------------------
+           TAB 1: KHÁM PHÁ (DISCOVER)
+           ------------------------------------------------------------- */
+        .hero-search-section {
+            background: radial-gradient(circle at 50% 0%, rgba(59, 130, 246, 0.15) 0%, transparent 70%);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-xl);
+            padding: 44px 32px;
+            text-align: center;
+            margin-bottom: 30px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59, 130, 246, 0.12);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: #60a5fa;
+            font-size: 11.5px;
+            font-weight: 700;
+            padding: 4px 12px;
+            border-radius: 20px;
+            margin-bottom: 14px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .hero-title {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            margin-bottom: 8px;
+        }
+
+        .hero-desc {
+            color: var(--text-secondary);
+            font-size: 14px;
+            max-width: 580px;
+            margin: 0 auto 28px auto;
+            line-height: 1.6;
+        }
+
+        .search-box-wrapper {
+            max-width: 620px;
+            margin: 0 auto;
+            display: flex;
+            gap: 10px;
+            position: relative;
+        }
+
+        .search-input-main {
+            flex: 1;
+            background: var(--bg-surface);
+            border: 2px solid var(--border-light);
+            color: var(--text-primary);
+            padding: 14px 20px 14px 48px;
+            border-radius: var(--radius-lg);
+            font-family: var(--font-mono);
+            font-size: 15px;
+            font-weight: 600;
+            outline: none;
+            transition: all 0.2s;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+        }
+
+        .search-input-main:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.2);
+        }
+
+        .search-icon-inside {
+            position: absolute;
+            left: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .btn-hero-search {
+            background: linear-gradient(135deg, #2563eb, #3b82f6);
+            color: white;
+            border: none;
+            padding: 0 24px;
+            border-radius: var(--radius-lg);
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 14px rgba(37, 99, 235, 0.4);
+        }
+
+        .btn-hero-search:hover {
+            opacity: 0.94;
+            transform: translateY(-1px);
+        }
+
+        /* Quick Discovery 3 Cards */
+        .discovery-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 18px;
+            margin-bottom: 30px;
+        }
+
+        .discovery-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .discovery-card:hover {
+            border-color: var(--accent-blue);
+            transform: translateY(-2px);
+            background: var(--bg-card);
+        }
+
+        .discovery-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: var(--radius-md);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            flex-shrink: 0;
+        }
+
+        .discovery-title {
+            font-size: 15px;
+            font-weight: 700;
+            margin-bottom: 4px;
+        }
+
+        .discovery-desc {
+            font-size: 12.5px;
+            color: var(--text-muted);
+            line-height: 1.5;
+        }
+
+        /* Screener Table Section */
+        .section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 800;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .table-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+        }
+
+        .screener-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13.5px;
+            text-align: left;
+        }
+
+        .screener-table th {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 14px 18px;
+            color: var(--text-muted);
+            font-size: 11.5px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            border-bottom: 1px solid var(--border);
+            font-weight: 600;
+        }
+
+        .screener-table td {
+            padding: 14px 18px;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            vertical-align: middle;
+        }
+
+        .screener-row {
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .screener-row:hover {
+            background: rgba(59, 130, 246, 0.08);
+        }
+
+        .coin-cell {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .coin-icon-mock {
+            width: 32px;
+            height: 32px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #1e293b, #334155);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 800;
+            font-size: 12px;
+            color: #38bdf8;
+            border: 1px solid var(--border-light);
+        }
+
+        .coin-name-wrap {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .coin-symbol {
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 14px;
+        }
+
+        .coin-full-name {
+            font-size: 11px;
+            color: var(--text-muted);
+        }
+
+        /* -------------------------------------------------------------
+           TAB 2: PHÂN TÍCH (ANALYZE)
+           ------------------------------------------------------------- */
+        .analyze-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 0.85fr;
+            gap: 22px;
+        }
+
+        @media (max-width: 1200px) {
+            .analyze-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel-box {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+        }
+
+        /* Coin Header Banner */
+        .coin-banner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding-bottom: 14px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .coin-banner-left {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .coin-price-large {
+            font-family: var(--font-mono);
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+        }
+
+        .price-badge-change {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            font-size: 13px;
+            padding: 3px 8px;
+            border-radius: var(--radius-sm);
+        }
+
+        .timeframe-selector {
+            display: flex;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 2px;
+            gap: 2px;
+        }
+
+        .tf-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-family: var(--font-mono);
+            font-size: 11.5px;
+            padding: 4px 10px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.15s;
+        }
+
+        .tf-btn.active, .tf-btn:hover {
+            color: white;
+            background: var(--accent-blue);
+        }
+
+        /* Candlestick Chart Container */
+        .chart-container {
+            width: 100%;
+            height: 380px;
+            background: #090d15;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            position: relative;
+            overflow: hidden;
+        }
+
+        #chart-canvas {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .chart-legend {
+            position: absolute;
+            top: 10px;
+            left: 14px;
+            display: flex;
+            gap: 14px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            pointer-events: none;
+            background: rgba(15, 21, 35, 0.7);
+            backdrop-filter: blur(4px);
+            padding: 4px 10px;
+            border-radius: var(--radius-sm);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        /* Indicators Strip */
+        .indicators-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+        }
+
+        .ind-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 12px;
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+
+        .ind-label {
+            font-size: 10.5px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+        }
+
+        .ind-val {
+            font-family: var(--font-mono);
+            font-size: 13px;
+            font-weight: 700;
+        }
+
+        /* 5-Step Pipeline Progress Bar */
+        .pipeline-card {
+            background: linear-gradient(180deg, var(--bg-card) 0%, rgba(21, 29, 48, 0.6) 100%);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+        }
+
+        .pipeline-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .pipeline-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .pipeline-steps {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: relative;
+        }
+
+        .pipeline-steps::before {
+            content: '';
+            position: absolute;
+            top: 14px;
+            left: 20px;
+            right: 20px;
+            height: 2px;
+            background: var(--border);
+            z-index: 1;
+        }
+
+        .step-item {
+            position: relative;
+            z-index: 2;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            font-size: 11px;
+            color: var(--text-muted);
+            text-align: center;
+        }
+
+        .step-circle {
+            width: 28px;
+            height: 28px;
+            border-radius: 50%;
+            background: var(--bg-surface);
+            border: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: 700;
+            transition: all 0.2s;
+        }
+
+        .step-item.done .step-circle {
+            background: var(--accent-green);
+            border-color: var(--accent-green);
+            color: white;
+            box-shadow: 0 0 10px var(--accent-green-glow);
+        }
+
+        .step-item.active .step-circle {
+            background: var(--accent-blue);
+            border-color: var(--accent-blue);
+            color: white;
+            box-shadow: 0 0 10px rgba(59, 130, 246, 0.4);
+            animation: pulse-ring 1.5s infinite;
+        }
+
+        .step-item.skipped .step-circle {
+            background: var(--bg-card);
+            border-color: var(--text-muted);
+            color: var(--text-muted);
+        }
+
+        .step-item.done, .step-item.active {
+            color: var(--text-primary);
+            font-weight: 600;
+        }
+
+        @keyframes pulse-ring {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
+        }
+
+        /* Consensus Radar & Visualizer */
+        .consensus-box {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+        }
+
+        .radar-canvas-wrap {
+            width: 110px;
+            height: 110px;
+            flex-shrink: 0;
+            position: relative;
+        }
+
+        .consensus-details {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .divergence-meter {
+            height: 6px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 3px;
+            overflow: hidden;
+            margin-top: 4px;
+        }
+
+        .divergence-fill {
+            height: 100%;
+            background: linear-gradient(90deg, var(--accent-green), var(--accent-amber), var(--accent-red));
+            transition: width 0.3s;
+        }
+
+        /* Analyst Cards */
+        .analyst-cards-stack {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .analyst-card-interactive {
+            background: var(--bg-card);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 12px 16px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .analyst-card-interactive:hover {
+            border-color: var(--accent-blue);
+            background: var(--bg-card-hover);
+        }
+
+        .analyst-head {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .analyst-title-wrap {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .analyst-name {
+            font-size: 13.5px;
+            font-weight: 700;
+        }
+
+        .analyst-preview-text {
+            font-size: 12px;
+            color: var(--text-secondary);
+            margin-top: 6px;
+            line-height: 1.45;
+        }
+
+        .analyst-details-hidden {
+            display: none;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px solid rgba(255, 255, 255, 0.06);
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+
+        .analyst-card-interactive.expanded .analyst-details-hidden {
+            display: block;
+        }
+
+        /* Debate Arena Area */
+        .debate-arena-box {
+            background: #090d15;
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .debate-bubble-modern {
+            padding: 12px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12.5px;
+            line-height: 1.5;
+            position: relative;
+        }
+
+        .debate-bubble-modern.bull {
+            background: rgba(16, 185, 129, 0.08);
+            border-left: 3px solid var(--accent-green);
+        }
+
+        .debate-bubble-modern.bear {
+            background: rgba(239, 68, 68, 0.08);
+            border-left: 3px solid var(--accent-red);
+        }
+
+        .debate-author-tag {
+            font-weight: 700;
+            font-size: 11.5px;
+            margin-bottom: 4px;
+            display: flex;
+            justify-content: space-between;
+        }
+
+        /* CTA to Switch to Execute Tab */
+        .btn-view-decision-cta {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 14px 20px;
+            border-radius: var(--radius-md);
+            font-weight: 800;
+            font-size: 14px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 4px 16px rgba(16, 185, 129, 0.35);
+        }
+
+        .btn-view-decision-cta:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.45);
+        }
+
+        /* -------------------------------------------------------------
+           TAB 3: QUYẾT ĐỊNH & THỰC THI (EXECUTE)
+           ------------------------------------------------------------- */
+        .execute-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        /* Empty State */
+        .empty-state-card {
+            background: var(--bg-surface);
+            border: 2px dashed var(--border);
+            border-radius: var(--radius-xl);
+            padding: 60px 30px;
+            text-align: center;
+        }
+
+        .empty-state-icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .empty-state-title {
+            font-size: 20px;
+            font-weight: 800;
+            margin-bottom: 8px;
+        }
+
+        .empty-state-desc {
+            color: var(--text-muted);
+            font-size: 14px;
+            max-width: 440px;
+            margin: 0 auto 24px auto;
+            line-height: 1.6;
+        }
+
+        /* Hero Signal Card */
+        .hero-signal-card {
+            background: linear-gradient(180deg, #162035 0%, #0d1424 100%);
+            border: 2px solid var(--accent-blue);
+            border-radius: var(--radius-xl);
+            padding: 32px;
+            box-shadow: 0 10px 35px rgba(59, 130, 246, 0.15);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero-signal-card.bullish {
+            border-color: var(--accent-green);
+            box-shadow: 0 10px 35px rgba(16, 185, 129, 0.2);
+        }
+
+        .hero-signal-card.bearish {
+            border-color: var(--accent-red);
+            box-shadow: 0 10px 35px rgba(239, 68, 68, 0.2);
+        }
+
+        .hero-signal-card.neutral {
+            border-color: var(--accent-amber);
+            box-shadow: 0 10px 35px rgba(245, 158, 11, 0.15);
+        }
+
+        .signal-top-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .signal-action-badge {
+            font-size: 36px;
+            font-weight: 900;
+            letter-spacing: 1px;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .conviction-meter-large {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 4px;
+        }
+
+        .conviction-score-pill {
+            background: rgba(255, 255, 255, 0.1);
+            font-family: var(--font-mono);
+            font-weight: 800;
+            font-size: 14px;
+            padding: 4px 12px;
+            border-radius: 20px;
+        }
+
+        /* Order Matrix Grid */
+        .order-matrix {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 14px;
+            margin: 24px 0;
+        }
+
+        .matrix-cell {
+            background: rgba(0, 0, 0, 0.35);
+            border: 1px solid rgba(255, 255, 255, 0.06);
+            border-radius: var(--radius-md);
+            padding: 16px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .matrix-cell-label {
+            font-size: 11px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .matrix-cell-val {
+            font-family: var(--font-mono);
+            font-size: 18px;
+            font-weight: 800;
+        }
+
+        .matrix-cell-sub {
+            font-size: 11.5px;
+            color: var(--text-secondary);
+        }
+
+        /* Guardrail Alert Callout */
+        .guardrail-alert {
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: var(--radius-md);
+            padding: 14px 18px;
+            font-size: 13px;
+            color: #fde68a;
+            display: flex;
+            align-items: flex-start;
+            gap: 12px;
+            line-height: 1.5;
+        }
+
+        /* Rationale Text */
+        .rationale-quote {
+            background: var(--bg-surface);
+            border-left: 4px solid var(--accent-blue);
+            border-radius: 0 var(--radius-md) var(--radius-md) 0;
+            padding: 16px 20px;
+            font-size: 13.5px;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .execute-actions-bar {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 10px;
+        }
+
+        .btn-execute-now {
+            background: linear-gradient(135deg, #10b981, #047857);
+            color: white;
+            border: none;
+            padding: 16px 36px;
+            border-radius: var(--radius-lg);
+            font-weight: 800;
+            font-size: 16px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 6px 20px rgba(16, 185, 129, 0.4);
+        }
+
+        .btn-execute-now:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.55);
+        }
+
+        /* -------------------------------------------------------------
+           TAB 4: DANH MỤC (PORTFOLIO)
+           ------------------------------------------------------------- */
+        .portfolio-stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 18px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card-modern {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .stat-card-title {
+            font-size: 12px;
+            color: var(--text-muted);
+            text-transform: uppercase;
+            font-weight: 600;
+        }
+
+        .stat-card-num {
+            font-family: var(--font-mono);
+            font-size: 26px;
+            font-weight: 800;
+        }
+
+        .stat-card-sub {
+            font-size: 12px;
+            color: var(--text-secondary);
+        }
+
+        /* Positions & History Tables */
+        .positions-card {
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+
+        .btn-close-pos {
+            background: rgba(239, 68, 68, 0.15);
+            color: #f87171;
+            border: 1px solid rgba(239, 68, 68, 0.3);
+            padding: 5px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 11.5px;
+            cursor: pointer;
+            transition: all 0.15s;
+        }
+
+        .btn-close-pos:hover {
+            background: var(--accent-red);
+            color: white;
+        }
+
+        /* -------------------------------------------------------------
+           DRAWER LOGS / CONSOLE STREAM FOOTER
+           ------------------------------------------------------------- */
+        .console-drawer {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: #06090e;
+            border-top: 1px solid var(--border);
+            z-index: 90;
+            transition: transform 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+            transform: translateY(calc(100% - 36px));
+        }
+
+        .console-drawer.open {
+            transform: translateY(0);
+        }
+
+        .console-bar-handle {
+            height: 36px;
+            padding: 0 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            background: var(--bg-surface);
+            border-top: 1px solid var(--border-light);
+            font-size: 12px;
+            color: var(--text-secondary);
+            font-weight: 600;
+        }
+
+        .console-content {
+            height: 180px;
+            overflow-y: auto;
+            padding: 14px 24px;
+            font-family: var(--font-mono);
+            font-size: 12px;
+            color: #38bdf8;
+            line-height: 1.6;
+        }
+
+        .console-line {
+            display: flex;
+            gap: 10px;
+        }
+
+        .console-time {
+            color: var(--text-muted);
+            flex-shrink: 0;
+        }
+
+        /* -------------------------------------------------------------
+           SHARED UTILITIES & BADGES
+           ------------------------------------------------------------- */
+        .text-green { color: var(--accent-green) !important; }
+        .text-red { color: var(--accent-red) !important; }
+        .text-blue { color: var(--accent-blue) !important; }
+        .text-purple { color: var(--accent-purple) !important; }
+        .text-amber { color: var(--accent-amber) !important; }
+
+        .badge-pill {
+            padding: 3px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-family: var(--font-mono);
+            font-weight: 700;
+            display: inline-block;
+        }
+
+        .badge-bull { background: var(--accent-green-bg); color: var(--accent-green); }
+        .badge-bear { background: var(--accent-red-bg); color: var(--accent-red); }
+        .badge-neutral { background: rgba(148, 163, 184, 0.12); color: var(--text-secondary); }
+
+        /* Toast notification */
+        #toast-box {
+            position: fixed;
+            top: 70px;
+            right: 24px;
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            color: white;
+            padding: 12px 20px;
+            border-radius: var(--radius-md);
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+            font-size: 13.5px;
+            font-weight: 600;
+            z-index: 1000;
+            transform: translateX(120%);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        #toast-box.show {
+            transform: translateX(0);
+        }
+    </style>
+</head>
+<body>
+
+    <!-- =============================================================
+         TOP BAR (HEADER)
+         ============================================================= -->
+    <header>
+        <div class="header-left">
+            <div class="brand" onclick="switchTab('tab-discover')">
+                <div class="logo-badge">TAURIC-AI</div>
+                <div class="brand-text">
+                    <span class="brand-title">Trading Agents Terminal</span>
+                    <span class="brand-subtitle">LangGraph • Chivu171 Consensus • Hard Guardrails</span>
+                </div>
+            </div>
+
+            <!-- Tab Navigation Buttons -->
+            <nav class="nav-tabs">
+                <button class="tab-btn active" id="btn-tab-discover" onclick="switchTab('tab-discover')">
+                    <span>🔍 1. Khám Phá</span>
+                </button>
+                <button class="tab-btn" id="btn-tab-analyze" onclick="switchTab('tab-analyze')">
+                    <span>🧠 2. Phân Tích</span>
+                    <span class="tab-badge" id="tab-symbol-badge">BTC</span>
+                </button>
+                <button class="tab-btn" id="btn-tab-execute" onclick="switchTab('tab-execute')">
+                    <span>⚡ 3. Quyết Định</span>
+                    <span class="tab-badge text-green" id="tab-signal-badge">READY</span>
+                </button>
+                <button class="tab-btn" id="btn-tab-portfolio" onclick="switchTab('tab-portfolio')">
+                    <span>💼 4. Danh Mục</span>
+                    <span class="tab-badge" id="tab-pos-count">0</span>
+                </button>
+            </nav>
+        </div>
+
+        <div class="header-right">
+            <!-- System Status -->
+            <div class="info-pill">
+                <span class="pulse-indicator"></span>
+                <span class="info-pill-label">LLM:</span>
+                <span class="info-pill-val text-purple" id="header-model">Gemini 3.8</span>
+            </div>
+
+            <!-- Live Active Price -->
+            <div class="info-pill">
+                <span class="info-pill-label" id="header-symbol">BTC/USDT</span>
+                <span class="info-pill-val" id="header-price">$86,505.00</span>
+                <span class="price-badge-change badge-bull" id="header-change">+0.6%</span>
+            </div>
+
+            <!-- Portfolio Equity Quick View -->
+            <div class="info-pill" style="cursor: pointer;" onclick="switchTab('tab-portfolio')">
+                <span class="info-pill-label">Vốn Paper:</span>
+                <span class="info-pill-val text-green" id="header-equity">$10,000.00</span>
+            </div>
+
+            <!-- Fast Action Trigger -->
+            <button class="btn-analyze-fast" id="btn-global-run" onclick="triggerAgentCycle()">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                <span id="btn-global-text">Chạy Phân Tích</span>
+            </button>
+        </div>
+    </header>
+
+    <!-- =============================================================
+         MAIN TABS CONTAINER
+         ============================================================= -->
+    <main>
+
+        <!-- ---------------------------------------------------------
+             TAB 1: KHÁM PHÁ (DISCOVER)
+             --------------------------------------------------------- -->
+        <div class="tab-pane active" id="tab-discover">
+            <!-- Hero Search Section -->
+            <div class="hero-search-section">
+                <div class="hero-badge">AI Crypto Intelligence Engine</div>
+                <h1 class="hero-title">Bạn muốn phân tích cơ hội nào hôm nay?</h1>
+                <p class="hero-desc">Hội đồng 3 Agent (Kỹ thuật • Tâm lý • On-chain) kết hợp bộ lọc rủi ro cứng giúp thẩm định mọi vị thế giao dịch.</p>
+
+                <div class="search-box-wrapper">
+                    <svg class="search-icon-inside" width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                    <input 
+                        type="text" 
+                        class="search-input-main" 
+                        id="main-search-input" 
+                        placeholder="Gõ mã coin (BTC, SOL, NEAR, SUI, PEPE...) hoặc bấm chọn bên dưới..."
+                        list="crypto-suggestions-list"
+                        onkeypress="if(event.key === 'Enter') handleHeroSearch()"
+                    />
+                    <datalist id="crypto-suggestions-list">
+                        <option value="BTC/USDT">Bitcoin</option>
+                        <option value="ETH/USDT">Ethereum</option>
+                        <option value="SOL/USDT">Solana</option>
+                        <option value="NEAR/USDT">Near Protocol</option>
+                        <option value="SUI/USDT">Sui Network</option>
+                        <option value="XRP/USDT">Ripple</option>
+                        <option value="DOGE/USDT">Dogecoin</option>
+                        <option value="PEPE/USDT">Pepe</option>
+                        <option value="AVAX/USDT">Avalanche</option>
+                        <option value="RENDER/USDT">Render</option>
+                        <option value="FET/USDT">Artificial Superintelligence</option>
+                    </datalist>
+                    <button class="btn-hero-search" onclick="handleHeroSearch()">
+                        <span>Phân Tích Ngay</span>
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Quick Action 3 Cards -->
+            <div class="discovery-grid">
+                <div class="discovery-card" onclick="document.getElementById('main-search-input').focus()">
+                    <div class="discovery-icon" style="background: rgba(59, 130, 246, 0.15); color: #60a5fa;">🎯</div>
+                    <div>
+                        <div class="discovery-title">Tìm Coin Cụ Thể</div>
+                        <div class="discovery-desc">Nhập bất kỳ mã coin nào đang niêm yết trên Binance Spot/Futures để tải biểu đồ và phân tích sâu.</div>
+                    </div>
+                </div>
+                <div class="discovery-card" onclick="loadMarketScreener()">
+                    <div class="discovery-icon" style="background: rgba(16, 185, 129, 0.15); color: #34d399;">⚡</div>
+                    <div>
+                        <div class="discovery-title">Quét Sóng Đột Biến</div>
+                        <div class="discovery-desc">Bộ lọc tự động quét các mã có volume đột biến, biến động 24h mạnh hoặc chạm vùng quá mua/quá bán.</div>
+                    </div>
+                </div>
+                <div class="discovery-card" onclick="switchTab('tab-portfolio')">
+                    <div class="discovery-icon" style="background: rgba(139, 92, 246, 0.15); color: #c084fc;">📊</div>
+                    <div>
+                        <div class="discovery-title">Tài Khoản Paper Trade</div>
+                        <div class="discovery-desc">Xem số dư vốn, các vị thế đang mở và lịch sử chốt lời/cắt lỗ với cơ chế trượt giá (slippage) thực tế.</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Top Market Opportunities Screener Table -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>🔥 Top Cơ Hội Tiềm Năng (Market Screener)</span>
+                </div>
+                <button class="tab-btn" style="background: var(--bg-card); border: 1px solid var(--border);" onclick="loadMarketScreener()">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>Làm Mới Screener</span>
+                </button>
+            </div>
+
+            <div class="table-card">
+                <table class="screener-table">
+                    <thead>
+                        <tr>
+                            <th style="width: 70px;">Hạng</th>
+                            <th>Cặp Giao Dịch</th>
+                            <th style="text-align: right;">Giá Hiện Tại</th>
+                            <th style="text-align: right;">Biến Động 24h</th>
+                            <th style="text-align: right;">Thanh Khoản (24h Vol)</th>
+                            <th>Dạng Tín Hiệu</th>
+                            <th style="text-align: center;">Điểm Tiềm Năng</th>
+                            <th style="text-align: center;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="screener-tbody">
+                        <tr>
+                            <td colspan="8" style="text-align: center; padding: 30px; color: var(--text-muted);">
+                                Đang tải danh sách cơ hội thị trường...
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- ---------------------------------------------------------
+             TAB 2: PHÂN TÍCH (ANALYZE)
+             --------------------------------------------------------- -->
+        <div class="tab-pane" id="tab-analyze">
+            <div class="analyze-grid">
+
+                <!-- Left Column: Chart & Indicator Metrics -->
+                <div class="panel-box">
+                    <!-- Coin Header -->
+                    <div class="coin-banner">
+                        <div class="coin-banner-left">
+                            <div>
+                                <span style="font-size: 18px; font-weight: 800;" id="analyze-symbol">BTC/USDT</span>
+                                <span style="font-size: 11px; color: var(--text-muted); margin-left: 6px;" id="analyze-exchange">Binance Spot</span>
+                            </div>
+                            <div class="coin-price-large" id="analyze-price">$86,505.66</div>
+                            <span class="price-badge-change badge-bull" id="analyze-change">+0.61%</span>
+                        </div>
+
+                        <!-- Timeframe selector -->
+                        <div class="timeframe-selector">
+                            <button class="tf-btn active" onclick="setTimeframe('15m')">15M</button>
+                            <button class="tf-btn" onclick="setTimeframe('1h')">1H</button>
+                            <button class="tf-btn" onclick="setTimeframe('4h')">4H</button>
+                            <button class="tf-btn" onclick="setTimeframe('1d')">1D</button>
+                        </div>
+                    </div>
+
+                    <!-- Interactive Candlestick Chart -->
+                    <div class="chart-container">
+                        <div class="chart-legend" id="chart-legend">
+                            <span>Open: <b id="leg-open">--</b></span>
+                            <span>High: <b id="leg-high">--</b></span>
+                            <span>Low: <b id="leg-low">--</b></span>
+                            <span>Close: <b id="leg-close">--</b></span>
+                            <span style="color: #60a5fa;">EMA 20/50</span>
+                        </div>
+                        <canvas id="chart-canvas"></canvas>
+                    </div>
+
+                    <!-- Key Technical Indicators Strip -->
+                    <div class="indicators-grid">
+                        <div class="ind-item">
+                            <span class="ind-label">RSI (14)</span>
+                            <span class="ind-val" id="ind-rsi">61.51</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">MACD (12, 26, 9)</span>
+                            <span class="ind-val text-green" id="ind-macd">+123.89</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">Bollinger Mid</span>
+                            <span class="ind-val" id="ind-bb">$86,182.22</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">ATR (14 Volatility)</span>
+                            <span class="ind-val" id="ind-atr">$343.18</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">Fear & Greed Index</span>
+                            <span class="ind-val text-green" id="ind-fgi">78/100 (Greed)</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">Funding Rate</span>
+                            <span class="ind-val text-blue" id="ind-funding">+0.0100%</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">Sổ Lệnh Imbalance</span>
+                            <span class="ind-val text-amber" id="ind-imbalance">-86.19%</span>
+                        </div>
+                        <div class="ind-item">
+                            <span class="ind-label">EMA 200 Trend</span>
+                            <span class="ind-val text-green" id="ind-ema200">ABOVE</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Right Column: AI Intelligence Hub & Debate -->
+                <div class="panel-box">
+                    
+                    <!-- 5-Step Pipeline Progress Tracker -->
+                    <div class="pipeline-card">
+                        <div class="pipeline-header">
+                            <div class="pipeline-title">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"></path></svg>
+                                <span>Tiến Trình Hội Đồng AI (5 Bước)</span>
+                            </div>
+                            <span class="badge-pill badge-neutral" id="pipeline-status-text">SẴN SÀNG</span>
+                        </div>
+                        <div class="pipeline-steps">
+                            <div class="step-item done" id="step-1">
+                                <div class="step-circle">1</div>
+                                <span>Dữ Liệu</span>
+                            </div>
+                            <div class="step-item done" id="step-2">
+                                <div class="step-circle">2</div>
+                                <span>3 Chuyên Gia</span>
+                            </div>
+                            <div class="step-item done" id="step-3">
+                                <div class="step-circle">3</div>
+                                <span>Thẩm Định</span>
+                            </div>
+                            <div class="step-item done" id="step-4">
+                                <div class="step-circle">4</div>
+                                <span>Chief Trader</span>
+                            </div>
+                            <div class="step-item done" id="step-5">
+                                <div class="step-circle">5</div>
+                                <span>Risk Cứng</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Consensus Radar & Divergence Check -->
+                    <div class="consensus-box">
+                        <div class="radar-canvas-wrap">
+                            <canvas id="radar-canvas" width="110" height="110"></canvas>
+                        </div>
+                        <div class="consensus-details">
+                            <div style="display: flex; justify-content: space-between; align-items: center;">
+                                <span style="font-weight: 700; font-size: 13px;">Thẩm Định Bất Đồng (Chivu171)</span>
+                                <span class="badge-pill badge-bull" id="consensus-verdict">Đồng Thuận Cao</span>
+                            </div>
+                            <div style="font-size: 11.5px; color: var(--text-muted);" id="divergence-text">
+                                Độ lệch ý kiến: 0.27 (Ngưỡng kích hoạt: 0.35)
+                            </div>
+                            <div class="divergence-meter">
+                                <div class="divergence-fill" id="divergence-bar" style="width: 35%;"></div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- 3 Analyst Cards (Expandable) -->
+                    <div class="analyst-cards-stack">
+                        <!-- Technical Analyst -->
+                        <div class="analyst-card-interactive" onclick="this.classList.toggle('expanded')">
+                            <div class="analyst-head">
+                                <div class="analyst-title-wrap">
+                                    <span>📈</span>
+                                    <span class="analyst-name">Technical Analyst</span>
+                                </div>
+                                <span class="badge-pill badge-neutral" id="card-badge-tech">NEUTRAL (+0.15) · 82%</span>
+                            </div>
+                            <div class="analyst-preview-text" id="card-sum-tech">
+                                Xu hướng kỹ thuật nghiêng về NEUTRAL theo tín hiệu RSI và cụm chỉ báo EMA.
+                            </div>
+                            <div class="analyst-details-hidden">
+                                <div>• Động lượng RSI dao động vùng 61.5, chưa quá mua.</div>
+                                <div>• Dải Bollinger hẹp dần báo hiệu biến động sắp mở rộng.</div>
+                            </div>
+                        </div>
+
+                        <!-- Sentiment Analyst -->
+                        <div class="analyst-card-interactive" onclick="this.classList.toggle('expanded')">
+                            <div class="analyst-head">
+                                <div class="analyst-title-wrap">
+                                    <span>📰</span>
+                                    <span class="analyst-name">Sentiment & News</span>
+                                </div>
+                                <span class="badge-pill badge-bull" id="card-badge-sent">BULLISH (+0.50) · 75%</span>
+                            </div>
+                            <div class="analyst-preview-text" id="card-sum-sent">
+                                Tâm lý thị trường ở vị thế tích cực, Fear & Greed ở ngưỡng tham lam.
+                            </div>
+                            <div class="analyst-details-hidden">
+                                <div>• Dòng tiền cộng đồng và tin tức ngắn hạn hỗ trợ đà tăng.</div>
+                            </div>
+                        </div>
+
+                        <!-- On-chain Analyst -->
+                        <div class="analyst-card-interactive" onclick="this.classList.toggle('expanded')">
+                            <div class="analyst-head">
+                                <div class="analyst-title-wrap">
+                                    <span>⛓️</span>
+                                    <span class="analyst-name">On-Chain & Flow</span>
+                                </div>
+                                <span class="badge-pill badge-bull" id="card-badge-flow">BULLISH (+0.25) · 78%</span>
+                            </div>
+                            <div class="analyst-preview-text" id="card-sum-flow">
+                                Thanh khoản sổ lệnh và funding rate phản ánh trạng thái cân bằng lành mạnh.
+                            </div>
+                            <div class="analyst-details-hidden">
+                                <div>• Funding rate ổn định quanh +0.0100%, không bị quá nhiệt vị thế Long.</div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Debate Arena Area (Conditional) -->
+                    <div class="debate-arena-box" id="debate-box">
+                        <div style="display: flex; justify-content: space-between; align-items: center; font-size: 12px; font-weight: 700;">
+                            <span>Sàn Tranh Luận (Debate Arena)</span>
+                            <span class="badge-pill badge-neutral" id="debate-badge">Bỏ qua vì đồng thuận cao</span>
+                        </div>
+                        <div id="debate-content" style="font-size: 12px; color: var(--text-muted);">
+                            ✓ Các Analyst đã đồng thuận về kịch bản tăng, không cần kích hoạt vòng đối thoại phản biện.
+                        </div>
+                    </div>
+
+                    <!-- Big CTA to Jump to Execute -->
+                    <button class="btn-view-decision-cta" onclick="switchTab('tab-execute')">
+                        <span>Xem Khuyến Nghị & Khớp Lệnh Chi Tiết</span>
+                        <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    </button>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ---------------------------------------------------------
+             TAB 3: QUYẾT ĐỊNH & THỰC THI (EXECUTE)
+             --------------------------------------------------------- -->
+        <div class="tab-pane" id="tab-execute">
+            <div class="execute-container">
+                
+                <!-- Hero Signal Card -->
+                <div class="hero-signal-card bullish" id="exec-hero-card">
+                    <div class="signal-top-row">
+                        <div>
+                            <span style="font-size: 12px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; letter-spacing: 0.5px;">Khuyến Nghị Của Chief Trader (CIO)</span>
+                            <div class="signal-action-badge text-green" id="exec-action">
+                                <span>🟢</span> <span id="exec-action-text">BUY (MUA)</span>
+                                <span style="font-size: 18px; color: var(--text-secondary); font-family: var(--font-mono); margin-left: 8px;" id="exec-symbol">BTC/USDT</span>
+                            </div>
+                        </div>
+                        <div class="conviction-meter-large">
+                            <span style="font-size: 11px; color: var(--text-muted); text-transform: uppercase;">Độ Tin Cậy Quyết Định</span>
+                            <div class="conviction-score-pill" id="exec-conviction">7 / 10 (Cao)</div>
+                        </div>
+                    </div>
+
+                    <!-- Order Matrix Grid -->
+                    <div class="order-matrix">
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Giá Vào Lệnh (Entry)</span>
+                            <span class="matrix-cell-val" id="exec-entry">$86,531.61</span>
+                            <span class="matrix-cell-sub">Khớp theo thị trường</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Cắt Lỗ (Stop Loss)</span>
+                            <span class="matrix-cell-val text-red" id="exec-sl">$66,800.00</span>
+                            <span class="matrix-cell-sub" id="exec-sl-pct">-22.8%</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Chốt Lời (Take Profit)</span>
+                            <span class="matrix-cell-val text-green" id="exec-tp">$116,064.15</span>
+                            <span class="matrix-cell-sub" id="exec-tp-pct">+34.1%</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Tỷ Lệ Risk / Reward</span>
+                            <span class="matrix-cell-val text-blue" id="exec-rr">1.50 : 1</span>
+                            <span class="matrix-cell-sub text-green">✓ Đạt chuẩn ≥ 1.5</span>
+                        </div>
+                    </div>
+
+                    <!-- Allocation Matrix Row -->
+                    <div class="order-matrix" style="margin-top: -10px;">
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Cấp Vốn Danh Mục</span>
+                            <span class="matrix-cell-val text-green" id="exec-alloc-pct">8.78%</span>
+                            <span class="matrix-cell-sub" id="exec-alloc-usd">$877.98 USD</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Khối Lượng Mua Dự Kiến</span>
+                            <span class="matrix-cell-val" id="exec-qty">0.0101 BTC</span>
+                            <span class="matrix-cell-sub">Phí ước tính: ~$0.44</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Daily Drawdown</span>
+                            <span class="matrix-cell-val text-green" id="exec-dd">0.0%</span>
+                            <span class="matrix-cell-sub">Giới hạn bảo vệ: 4.0%</span>
+                        </div>
+                        <div class="matrix-cell">
+                            <span class="matrix-cell-label">Circuit Breaker</span>
+                            <span class="matrix-cell-val text-green" id="exec-cb">AN TOÀN</span>
+                            <span class="matrix-cell-sub">Bộ ngắt mạch bình thường</span>
+                        </div>
+                    </div>
+
+                    <!-- Hard Guardrail Warning / Adjustment Callout -->
+                    <div class="guardrail-alert" id="exec-guardrail-alert">
+                        <span style="font-size: 18px;">🛡️</span>
+                        <div>
+                            <b>Quản trị rủi ro cứng (Non-LLM Guardrail) đã thẩm định:</b>
+                            <div id="exec-guardrail-msg" style="margin-top: 3px;">
+                                Lệnh BUY đã được phê duyệt. Take-profit được điều chỉnh tự động lên $116,064.15 nhằm đảm bảo tỷ lệ Risk:Reward tối thiểu 1.5.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Rationale Box -->
+                    <div style="margin-top: 20px;">
+                        <span style="font-size: 11.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block;">Luận Điểm Giao Dịch Của Chief Trader</span>
+                        <div class="rationale-quote" id="exec-rationale">
+                            "Tổng hợp phân tích kỹ thuật và dòng tiền ủng hộ kịch bản tăng. Luận điểm Bull có cơ sở xác thực với hỗ trợ dòng tiền và cấu trúc giá tiếp diễn."
+                        </div>
+                    </div>
+
+                    <!-- Actions -->
+                    <div class="execute-actions-bar">
+                        <button class="btn-execute-now" onclick="executePaperTrade()">
+                            <span>🚀 Khớp Lệnh Paper Trade ($877.98)</span>
+                        </button>
+                        <button class="tab-btn" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 16px 24px;" onclick="switchTab('tab-analyze')">
+                            <span>← Xem Lại Phân Tích</span>
+                        </button>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+
+        <!-- ---------------------------------------------------------
+             TAB 4: DANH MỤC (PORTFOLIO)
+             --------------------------------------------------------- -->
+        <div class="tab-pane" id="tab-portfolio">
+            
+            <!-- Portfolio Overview 4 Cards -->
+            <div class="portfolio-stats-grid">
+                <div class="stat-card-modern">
+                    <span class="stat-card-title">Tổng Tài Sản (Equity)</span>
+                    <span class="stat-card-num text-green" id="pf-equity">$10,000.00</span>
+                    <span class="stat-card-sub" id="pf-cash">Tiền mặt: $10,000.00 USD</span>
+                </div>
+                <div class="stat-card-modern">
+                    <span class="stat-card-title">Lợi Nhuận Đã Chốt</span>
+                    <span class="stat-card-num" id="pf-realized">$0.00</span>
+                    <span class="stat-card-sub">Tổng số lệnh đóng: <b id="pf-closed-count">0</b></span>
+                </div>
+                <div class="stat-card-modern">
+                    <span class="stat-card-title">Tỷ Lệ Thắng (Win Rate)</span>
+                    <span class="stat-card-num text-amber" id="pf-winrate">0.0%</span>
+                    <span class="stat-card-sub">Dựa trên các lệnh đã hoàn tất</span>
+                </div>
+                <div class="stat-card-modern">
+                    <span class="stat-card-title">Drawdown Lớn Nhất</span>
+                    <span class="stat-card-num text-blue" id="pf-maxdd">0.0%</span>
+                    <span class="stat-card-sub" id="pf-dailydd">Daily Drawdown: 0.0%</span>
+                </div>
+            </div>
+
+            <!-- Active Positions -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>📌 Vị Thế Đang Mở (Active Positions)</span>
+                </div>
+            </div>
+
+            <div class="positions-card">
+                <table class="screener-table">
+                    <thead>
+                        <tr>
+                            <th>Cặp Coin</th>
+                            <th>Vị Thế</th>
+                            <th style="text-align: right;">Khối Lượng</th>
+                            <th style="text-align: right;">Giá Vào (Entry)</th>
+                            <th style="text-align: right;">Giá Hiện Tại</th>
+                            <th style="text-align: right;">Lãi/Lỗ Chưa Chốt (PnL)</th>
+                            <th style="text-align: right;">Stop Loss</th>
+                            <th style="text-align: right;">Take Profit</th>
+                            <th style="text-align: center;">Thao Tác</th>
+                        </tr>
+                    </thead>
+                    <tbody id="positions-tbody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                Chưa có vị thế mở nào. Hãy chọn coin và bấm Phân Tích Đa Agent để mở lệnh.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Closed Trades History -->
+            <div class="section-header">
+                <div class="section-title">
+                    <span>📜 Lịch Sử Giao Dịch Đã Đóng</span>
+                </div>
+            </div>
+
+            <div class="positions-card">
+                <table class="screener-table">
+                    <thead>
+                        <tr>
+                            <th>Thời Gian</th>
+                            <th>Cặp Coin</th>
+                            <th>Vị Thế</th>
+                            <th style="text-align: right;">Giá Mua</th>
+                            <th style="text-align: right;">Giá Bán</th>
+                            <th style="text-align: right;">Khối Lượng</th>
+                            <th style="text-align: right;">PnL ($)</th>
+                            <th style="text-align: right;">PnL (%)</th>
+                            <th>Lý Do Đóng</th>
+                        </tr>
+                    </thead>
+                    <tbody id="history-tbody">
+                        <tr>
+                            <td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">
+                                Chưa có giao dịch nào được hoàn tất.
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- =============================================================
+         BOTTOM CONSOLE STREAM DRAWER
+         ============================================================= -->
+    <div class="console-drawer" id="console-drawer">
+        <div class="console-bar-handle" onclick="toggleConsoleDrawer()">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span class="pulse-indicator"></span>
+                <span>Hoạt Động Hệ Thống (Console Stream)</span>
+                <span class="badge-pill badge-neutral" id="console-count">3 logs</span>
+            </div>
+            <div style="font-size: 11px; color: var(--text-muted);">
+                Bấm để mở rộng / thu nhỏ ▼
+            </div>
+        </div>
+        <div class="console-content" id="console-stream">
+            <div class="console-line"><span class="console-time">[INIT]</span> Hệ thống Tauric Multi-Agent Trading System đã sẵn sàng.</div>
+            <div class="console-line"><span class="console-time">[INIT]</span> Kết nối thành công Binance public feed và bộ quy tắc Hard Risk Guardrails.</div>
+        </div>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="toast-box">
+        <span id="toast-icon">✓</span>
+        <span id="toast-msg">Thông báo thành công</span>
+    </div>
+
+    <!-- =============================================================
+         CLIENT JAVASCRIPT LOGIC
+         ============================================================= -->
+    <script>
+        // Global State
+        let currentSymbol = "BTC/USDT";
+        let currentTimeframe = "15m";
+        let lastCycleData = null;
+        let candleData = [];
+
+        // -------------------------------------------------------------
+        // TAB ROUTER
+        // -------------------------------------------------------------
+        function switchTab(tabId) {
+            document.querySelectorAll('.tab-pane').forEach(el => el.classList.remove('active'));
+            document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+            const targetPane = document.getElementById(tabId);
+            if (targetPane) targetPane.classList.add('active');
+
+            const btnId = 'btn-' + tabId;
+            const targetBtn = document.getElementById(btnId);
+            if (targetBtn) targetBtn.classList.add('active');
+
+            // If switching to analyze, redraw chart and radar
+            if (tabId === 'tab-analyze') {
+                setTimeout(() => {
+                    renderCandleChart();
+                    renderRadarChart();
+                }, 50);
+            }
+        }
+
+        function toggleConsoleDrawer() {
+            document.getElementById('console-drawer').classList.toggle('open');
+        }
+
+        function showToast(msg, isSuccess = true) {
+            const toast = document.getElementById('toast-box');
+            document.getElementById('toast-msg').innerText = msg;
+            document.getElementById('toast-icon').innerText = isSuccess ? '✓' : '⚠️';
+            document.getElementById('toast-icon').className = isSuccess ? 'text-green' : 'text-red';
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+
+        function logConsole(msg) {
+            const box = document.getElementById('console-stream');
+            const now = new Date().toLocaleTimeString();
+            const line = document.createElement('div');
+            line.className = 'console-line';
+            line.innerHTML = `<span class="console-time">[${now}]</span> ${msg}`;
+            box.appendChild(line);
+            box.scrollTop = box.scrollHeight;
+        }
+
+        // -------------------------------------------------------------
+        // WEBSOCKET REALTIME STREAM
+        // -------------------------------------------------------------
+        let ws;
+        function initWebSocket() {
+            const proto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const url = `${proto}//${window.location.host}/ws/stream`;
+            ws = new WebSocket(url);
+
+            ws.onopen = () => {
+                logConsole("[WS] Đã kết nối WebSocket thời gian thực.");
+            };
+
+            ws.onmessage = (event) => {
+                try {
+                    const data = JSON.parse(event.data);
+                    if (data.type === "CYCLE_START") {
+                        setPipelineStep(1, 'active');
+                        document.getElementById('btn-global-text').innerText = 'Đang Suy Luận...';
+                        document.getElementById('btn-global-run').disabled = true;
+                        logConsole(`🚀 ${data.message}`);
+                    } else if (data.type === "CYCLE_COMPLETE") {
+                        lastCycleData = data;
+                        setAllPipelineDone();
+                        document.getElementById('btn-global-text').innerText = 'Chạy Phân Tích';
+                        document.getElementById('btn-global-run').disabled = false;
+                        updateAllViewsWithCycleData(data);
+                        showToast(`Hoàn tất phân tích đa agent cho ${data.symbol}!`);
+                    } else if (data.type === "PORTFOLIO_UPDATE") {
+                        updatePortfolioView(data.portfolio);
+                    }
+                } catch (e) {
+                    console.error("WS error:", e);
+                }
+            };
+
+            ws.onclose = () => {
+                setTimeout(initWebSocket, 4000);
+            };
+        }
+
+        // -------------------------------------------------------------
+        // PIPELINE PROGRESS VISUALIZER
+        // -------------------------------------------------------------
+        function setPipelineStep(stepNum, status) {
+            for (let i = 1; i <= 5; i++) {
+                const el = document.getElementById(`step-${i}`);
+                if (i < stepNum) {
+                    el.className = 'step-item done';
+                } else if (i === stepNum) {
+                    el.className = `step-item ${status}`;
+                } else {
+                    el.className = 'step-item';
+                }
+            }
+            document.getElementById('pipeline-status-text').innerText = 
+                status === 'active' ? `BƯỚC ${stepNum}/5: ĐANG CHẠY` : 'SẴN SÀNG';
+        }
+
+        function setAllPipelineDone() {
+            for (let i = 1; i <= 5; i++) {
+                document.getElementById(`step-${i}`).className = 'step-item done';
+            }
+            document.getElementById('pipeline-status-text').innerText = 'ĐÃ THẨM ĐỊNH';
+            document.getElementById('pipeline-status-text').className = 'badge-pill badge-bull';
+        }
+
+        // -------------------------------------------------------------
+        // CANDLESTICK CHART ENGINE (HTML5 Canvas)
+        // -------------------------------------------------------------
+        async function fetchAndRenderCandles(symbol, tf) {
+            try {
+                const res = await fetch(`/api/candles?symbol=${encodeURIComponent(symbol)}&timeframe=${tf}&limit=50`);
+                if (!res.ok) throw new Error("Could not load candles");
+                const json = await res.json();
+                candleData = json.candles || [];
+                renderCandleChart();
+            } catch (err) {
+                console.warn("Using simulated candles fallback:", err);
+                renderCandleChart();
+            }
+        }
+
+        function renderCandleChart() {
+            const canvas = document.getElementById('chart-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const rect = canvas.parentElement.getBoundingClientRect();
+            
+            canvas.width = rect.width;
+            canvas.height = rect.height;
+
+            const W = canvas.width;
+            const H = canvas.height;
+            ctx.clearRect(0, 0, W, H);
+
+            // If no real candles, generate realistic synthetic display
+            let data = candleData;
+            if (!data || data.length === 0) {
+                data = [];
+                let base = 86000;
+                for (let i = 0; i < 40; i++) {
+                    let chg = (Math.random() - 0.48) * 300;
+                    let o = base;
+                    let c = base + chg;
+                    let h = Math.max(o, c) + Math.random() * 120;
+                    let l = Math.min(o, c) - Math.random() * 120;
+                    base = c;
+                    data.push({ open: o, high: h, low: l, close: c });
+                }
+            }
+
+            const padding = { top: 30, right: 70, bottom: 30, left: 10 };
+            const plotW = W - padding.left - padding.right;
+            const plotH = H - padding.top - padding.bottom;
+
+            let minPrice = Math.min(...data.map(d => d.low));
+            let maxPrice = Math.max(...data.map(d => d.high));
+            const range = (maxPrice - minPrice) || 1;
+
+            // Price Y-mapping helper
+            const getY = p => padding.top + plotH - ((p - minPrice) / range) * plotH;
+
+            // Draw grid lines
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.04)';
+            ctx.lineWidth = 1;
+            for (let i = 0; i <= 5; i++) {
+                const y = padding.top + (plotH / 5) * i;
+                ctx.beginPath();
+                ctx.moveTo(padding.left, y);
+                ctx.lineTo(W - padding.right, y);
+                ctx.stroke();
+
+                // Price label on right
+                const priceAtY = maxPrice - (range / 5) * i;
+                ctx.fillStyle = '#64748b';
+                ctx.font = '10.5px JetBrains Mono';
+                ctx.fillText(`$${priceAtY.toFixed(priceAtY < 10 ? 4 : 2)}`, W - padding.right + 6, y + 4);
+            }
+
+            // Draw candles
+            const count = data.length;
+            const candleW = Math.max(3, (plotW / count) * 0.7);
+            const step = plotW / count;
+
+            data.forEach((c, i) => {
+                const x = padding.left + i * step + step / 2;
+                const isGreen = c.close >= c.open;
+                const color = isGreen ? '#10b981' : '#ef4444';
+
+                // Wick
+                ctx.strokeStyle = color;
+                ctx.lineWidth = 1.2;
+                ctx.beginPath();
+                ctx.moveTo(x, getY(c.high));
+                ctx.lineTo(x, getY(c.low));
+                ctx.stroke();
+
+                // Body
+                const yOpen = getY(c.open);
+                const yClose = getY(c.close);
+                const bodyTop = Math.min(yOpen, yClose);
+                const bodyHeight = Math.max(2, Math.abs(yClose - yOpen));
+
+                ctx.fillStyle = color;
+                ctx.fillRect(x - candleW / 2, bodyTop, candleW, bodyHeight);
+            });
+
+            // Update legend with latest candle
+            if (data.length > 0) {
+                const last = data[data.length - 1];
+                document.getElementById('leg-open').innerText = `$${last.open.toFixed(2)}`;
+                document.getElementById('leg-high').innerText = `$${last.high.toFixed(2)}`;
+                document.getElementById('leg-low').innerText = `$${last.low.toFixed(2)}`;
+                document.getElementById('leg-close').innerText = `$${last.close.toFixed(2)}`;
+                document.getElementById('leg-close').style.color = last.close >= last.open ? 'var(--accent-green)' : 'var(--accent-red)';
+            }
+
+            // Draw TP and SL overlay lines if decision exists
+            if (lastCycleData && lastCycleData.raw_decision) {
+                const tp = lastCycleData.risk_validation?.approved_take_profit || lastCycleData.raw_decision.take_profit;
+                const sl = lastCycleData.risk_validation?.approved_stop_loss || lastCycleData.raw_decision.stop_loss;
+
+                if (tp && tp <= maxPrice && tp >= minPrice) {
+                    const yTP = getY(tp);
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#10b981';
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, yTP);
+                    ctx.lineTo(W - padding.right, yTP);
+                    ctx.stroke();
+                    ctx.fillStyle = '#10b981';
+                    ctx.fillText(`TP: $${tp.toLocaleString()}`, W - padding.right + 6, yTP + 3);
+                }
+
+                if (sl && sl <= maxPrice && sl >= minPrice) {
+                    const ySL = getY(sl);
+                    ctx.setLineDash([6, 4]);
+                    ctx.strokeStyle = '#ef4444';
+                    ctx.beginPath();
+                    ctx.moveTo(padding.left, ySL);
+                    ctx.lineTo(W - padding.right, ySL);
+                    ctx.stroke();
+                    ctx.fillStyle = '#ef4444';
+                    ctx.fillText(`SL: $${sl.toLocaleString()}`, W - padding.right + 6, ySL + 3);
+                }
+                ctx.setLineDash([]);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // CONSENSUS RADAR VISUALIZER (HTML5 Canvas)
+        // -------------------------------------------------------------
+        function renderRadarChart(scores = [0.15, 0.50, 0.25]) {
+            const canvas = document.getElementById('radar-canvas');
+            if (!canvas) return;
+            const ctx = canvas.getContext('2d');
+            const W = canvas.width;
+            const H = canvas.height;
+            const cx = W / 2;
+            const cy = H / 2;
+            const R = 44;
+
+            ctx.clearRect(0, 0, W, H);
+
+            // Draw 3 axes: Tech (Top), Sent (Bottom-Right), Flow (Bottom-Left)
+            const angles = [-Math.PI / 2, Math.PI / 6, (5 * Math.PI) / 6];
+
+            ctx.strokeStyle = 'rgba(255, 255, 255, 0.1)';
+            ctx.lineWidth = 1;
+            angles.forEach(a => {
+                ctx.beginPath();
+                ctx.moveTo(cx, cy);
+                ctx.lineTo(cx + R * Math.cos(a), cy + R * Math.sin(a));
+                ctx.stroke();
+            });
+
+            // Outer reference triangle
+            ctx.beginPath();
+            angles.forEach((a, idx) => {
+                const x = cx + R * Math.cos(a);
+                const y = cy + R * Math.sin(a);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.stroke();
+
+            // Polygon of analyst belief scores (mapped 0..1)
+            ctx.beginPath();
+            angles.forEach((a, idx) => {
+                const s = scores[idx] !== undefined ? scores[idx] : 0.2;
+                const rNorm = Math.max(0.1, (s + 1) / 2) * R;
+                const x = cx + rNorm * Math.cos(a);
+                const y = cy + rNorm * Math.sin(a);
+                if (idx === 0) ctx.moveTo(x, y);
+                else ctx.lineTo(x, y);
+            });
+            ctx.closePath();
+            ctx.fillStyle = 'rgba(59, 130, 246, 0.35)';
+            ctx.fill();
+            ctx.strokeStyle = '#3b82f6';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Center glow
+            ctx.fillStyle = '#60a5fa';
+            ctx.beginPath();
+            ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        // -------------------------------------------------------------
+        // SCREENER LOADER
+        // -------------------------------------------------------------
+        async function loadMarketScreener() {
+            const tbody = document.getElementById('screener-tbody');
+            tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--text-muted);">Đang quét cơ hội thị trường...</td></tr>`;
+
+            try {
+                const res = await fetch('/api/scan');
+                const list = await res.json();
+
+                if (!list || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;">Không tìm thấy coin phù hợp.</td></tr>`;
+                    return;
+                }
+
+                tbody.innerHTML = list.map((c, i) => {
+                    const isPositive = c.change_24h_pct >= 0;
+                    return `
+                        <tr class="screener-row" onclick="selectAndAnalyzeCoin('${c.symbol}')">
+                            <td style="font-weight: 700; color: var(--text-muted); font-family: var(--font-mono);">#${i + 1}</td>
+                            <td>
+                                <div class="coin-cell">
+                                    <div class="coin-icon-mock">${c.symbol.split('/')[0].slice(0, 3)}</div>
+                                    <div class="coin-name-wrap">
+                                        <span class="coin-symbol">${c.symbol}</span>
+                                        <span class="coin-full-name">Binance Volume Top</span>
+                                    </div>
+                                </div>
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700;">
+                                $${c.current_price < 1 ? c.current_price.toFixed(4) : c.current_price.toLocaleString('en-US', {minimumFractionDigits: 2})}
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: ${isPositive ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                                ${isPositive ? '+' : ''}${c.change_24h_pct.toFixed(2)}%
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); color: var(--text-secondary);">
+                                $${c.quote_volume_mil.toFixed(1)}M
+                            </td>
+                            <td>
+                                <span class="badge-pill badge-neutral" style="color: var(--accent-amber);">${c.signal_type}</span>
+                            </td>
+                            <td style="text-align: center; font-family: var(--font-mono); font-weight: 800; color: var(--accent-green);">
+                                ${c.opportunity_score.toFixed(1)}
+                            </td>
+                            <td style="text-align: center;">
+                                <button class="btn-analyze-fast" style="padding: 5px 12px; font-size: 11.5px;" onclick="event.stopPropagation(); selectAndAnalyzeCoin('${c.symbol}')">
+                                    Phân Tích →
+                                </button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } catch (err) {
+                console.error("Screener failed:", err);
+                tbody.innerHTML = `<tr><td colspan="8" style="text-align:center;padding:24px;color:var(--accent-red);">Lỗi nạp dữ liệu screener: ${err.message}</td></tr>`;
+            }
+        }
+
+        function handleHeroSearch() {
+            let sym = document.getElementById('main-search-input').value.trim().toUpperCase();
+            if (!sym) return;
+            selectAndAnalyzeCoin(sym);
+        }
+
+        function selectAndAnalyzeCoin(symbol) {
+            if (!symbol.includes('/')) {
+                symbol = symbol.endsWith('USDT') ? symbol.replace('USDT', '/USDT') : symbol + '/USDT';
+            }
+            currentSymbol = symbol;
+            document.getElementById('header-symbol').innerText = symbol;
+            document.getElementById('analyze-symbol').innerText = symbol;
+            document.getElementById('tab-symbol-badge').innerText = symbol.split('/')[0];
+
+            switchTab('tab-analyze');
+            fetchAndRenderCandles(currentSymbol, currentTimeframe);
+            triggerAgentCycle();
+        }
+
+        function setTimeframe(tf) {
+            currentTimeframe = tf;
+            document.querySelectorAll('.tf-btn').forEach(b => b.classList.remove('active'));
+            event.target.classList.add('active');
+            fetchAndRenderCandles(currentSymbol, tf);
+        }
+
+        // -------------------------------------------------------------
+        // TRIGGER MULTI-AGENT ADVISORY CYCLE
+        // -------------------------------------------------------------
+        async function triggerAgentCycle() {
+            setPipelineStep(2, 'active');
+            document.getElementById('btn-global-text').innerText = 'Đang Suy Luận...';
+            document.getElementById('btn-global-run').disabled = true;
+            logConsole(`⏳ Kích hoạt hội đồng đa agent phân tích chuyên sâu ${currentSymbol}...`);
+
+            try {
+                const res = await fetch(`/api/trigger-cycle?symbol=${encodeURIComponent(currentSymbol)}`, { method: 'POST' });
+                if (!res.ok) throw new Error(await res.text());
+                const data = await res.json();
+
+                lastCycleData = data;
+                setAllPipelineDone();
+                document.getElementById('btn-global-text').innerText = 'Chạy Phân Tích';
+                document.getElementById('btn-global-run').disabled = false;
+
+                updateAllViewsWithCycleData(data);
+                showToast(`Đã có quyết định từ Chief Trader cho ${currentSymbol}!`);
+            } catch (err) {
+                console.error("Agent cycle failed:", err);
+                logConsole(`[LỖI] Phân tích thất bại: ${err.message}`);
+                document.getElementById('btn-global-text').innerText = 'Chạy Phân Tích';
+                document.getElementById('btn-global-run').disabled = false;
+                setPipelineStep(1, '');
+                showToast(`Lỗi phân tích: ${err.message}`, false);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // UPDATE ALL INTERFACE VIEWS FROM AGENT OUTPUT
+        // -------------------------------------------------------------
+        function updateAllViewsWithCycleData(data) {
+            const snap = data.snapshot;
+            const analysts = data.analysts || [];
+            const dec = data.raw_decision;
+            const risk = data.risk_validation;
+            const pf = data.portfolio;
+
+            // 1. Update Market & Indicators in Tab 2
+            if (snap) {
+                const pStr = `$${snap.current_price.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+                const chg = snap.change_24h_pct;
+                const isPos = chg >= 0;
+
+                document.getElementById('header-price').innerText = pStr;
+                document.getElementById('analyze-price').innerText = pStr;
+                document.getElementById('header-change').innerText = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
+                document.getElementById('header-change').className = `price-badge-change ${isPos ? 'badge-bull' : 'badge-bear'}`;
+                document.getElementById('analyze-change').innerText = `${isPos ? '+' : ''}${chg.toFixed(2)}%`;
+                document.getElementById('analyze-change').className = `price-badge-change ${isPos ? 'badge-bull' : 'badge-bear'}`;
+
+                if (snap.rsi_14) document.getElementById('ind-rsi').innerText = snap.rsi_14.toFixed(2);
+                if (snap.macd) document.getElementById('ind-macd').innerText = `${snap.macd >= 0 ? '+' : ''}${snap.macd.toFixed(2)}`;
+                if (snap.bb_middle) document.getElementById('ind-bb').innerText = `$${snap.bb_middle.toLocaleString()}`;
+                if (snap.atr_14) document.getElementById('ind-atr').innerText = `$${snap.atr_14.toFixed(2)}`;
+                if (snap.fear_and_greed_score) document.getElementById('ind-fgi').innerText = `${snap.fear_and_greed_score}/100 (${snap.fear_and_greed_label || 'Neutral'})`;
+                if (snap.funding_rate) document.getElementById('ind-funding').innerText = `${(snap.funding_rate * 100).toFixed(4)}%`;
+                if (snap.orderbook_imbalance) document.getElementById('ind-imbalance').innerText = `${(snap.orderbook_imbalance * 100).toFixed(2)}%`;
+            }
+
+            // 2. Update Analysts Cards & Radar
+            const scores = [];
+            if (analysts.length >= 3) {
+                const [t, s, f] = analysts;
+                scores.push(t.belief?.score || 0.15);
+                scores.push(s.belief?.score || 0.50);
+                scores.push(f.belief?.score || 0.25);
+
+                updateAnalystCard('tech', t);
+                updateAnalystCard('sent', s);
+                updateAnalystCard('flow', f);
+            }
+            renderRadarChart(scores);
+
+            // 3. Update Consensus & Debate
+            const divScore = data.divergence_score || 0.0;
+            const barW = Math.min(100, (divScore / 0.5) * 100);
+            document.getElementById('divergence-bar').style.width = `${barW}%`;
+            document.getElementById('divergence-text').innerText = `Độ lệch ý kiến: ${divScore.toFixed(2)} (Ngưỡng kích hoạt: 0.35)`;
+
+            const isDebate = data.needs_debate;
+            document.getElementById('consensus-verdict').innerText = isDebate ? 'Bất Đồng Ý Kiến' : 'Đồng Thuận Cao';
+            document.getElementById('consensus-verdict').className = `badge-pill ${isDebate ? 'badge-bear' : 'badge-bull'}`;
+            document.getElementById('debate-badge').innerText = isDebate ? 'Kích hoạt vòng đối đầu' : 'Bỏ qua vì đồng thuận cao';
+
+            const debateBox = document.getElementById('debate-content');
+            if (data.debate_turns && data.debate_turns.length > 0) {
+                debateBox.innerHTML = data.debate_turns.map(d => {
+                    const isBull = d.speaker.includes('Bull');
+                    return `
+                        <div class="debate-bubble-modern ${isBull ? 'bull' : 'bear'}">
+                            <div class="debate-author-tag">
+                                <span>${isBull ? '🐂' : '🐻'} ${d.speaker} (Vòng ${d.round_num})</span>
+                                <span class="${isBull ? 'text-green' : 'text-red'}">${d.stance_score > 0 ? '+' : ''}${d.stance_score.toFixed(2)}</span>
+                            </div>
+                            <div>${d.argument}</div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                debateBox.innerHTML = `✓ Các Analyst đồng thuận cao về triển vọng thị trường. Bỏ qua vòng tranh luận Bull/Bear để tối ưu tốc độ ra quyết định.`;
+            }
+
+            // 4. Update Tab 3 (Execute View)
+            if (dec) {
+                const act = dec.action;
+                document.getElementById('exec-action-text').innerText = `${act} (${act === 'BUY' ? 'MUA' : (act === 'SELL' ? 'BÁN' : 'GIỮ')})`;
+                document.getElementById('tab-signal-badge').innerText = act;
+                document.getElementById('tab-signal-badge').className = `tab-badge ${act === 'BUY' ? 'text-green' : (act === 'SELL' ? 'text-red' : 'text-amber')}`;
+
+                const cardEl = document.getElementById('exec-hero-card');
+                cardEl.className = `hero-signal-card ${act === 'BUY' ? 'bullish' : (act === 'SELL' ? 'bearish' : 'neutral')}`;
+
+                document.getElementById('exec-symbol').innerText = data.symbol;
+                document.getElementById('exec-conviction').innerText = `${dec.conviction || 7} / 10 (${dec.conviction >= 7 ? 'Cao' : 'Trung Bình'})`;
+
+                const entry = snap ? snap.current_price : 86500;
+                document.getElementById('exec-entry').innerText = `$${entry.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+
+                const sl = risk?.approved_stop_loss || dec.stop_loss;
+                const tp = risk?.approved_take_profit || dec.take_profit;
+
+                if (sl) {
+                    document.getElementById('exec-sl').innerText = `$${sl.toLocaleString()}`;
+                    const slPct = ((sl - entry) / entry) * 100;
+                    document.getElementById('exec-sl-pct').innerText = `${slPct.toFixed(1)}%`;
+                }
+
+                if (tp) {
+                    document.getElementById('exec-tp').innerText = `$${tp.toLocaleString()}`;
+                    const tpPct = ((tp - entry) / entry) * 100;
+                    document.getElementById('exec-tp-pct').innerText = `+${tpPct.toFixed(1)}%`;
+                }
+
+                if (sl && tp && sl !== entry) {
+                    const rr = Math.abs((tp - entry) / (entry - sl));
+                    document.getElementById('exec-rr').innerText = `${rr.toFixed(2)} : 1`;
+                }
+
+                if (risk) {
+                    document.getElementById('exec-alloc-pct').innerText = `${risk.approved_position_size_pct || 8.0}%`;
+                    document.getElementById('exec-alloc-usd').innerText = `$${(risk.approved_position_usd || 800).toLocaleString()} USD`;
+
+                    if (risk.guardrail_notes && risk.guardrail_notes.length > 0) {
+                        document.getElementById('exec-guardrail-msg').innerText = risk.guardrail_notes.join('; ');
+                    }
+                }
+
+                document.getElementById('exec-rationale').innerText = `"${dec.rationale || 'Luận điểm thị trường được củng cố bởi sự đồng thuận giữa các chỉ báo kỹ thuật và thanh khoản dòng tiền.'}"`;
+            }
+
+            // 5. Update Portfolio in Tab 4
+            if (pf) {
+                updatePortfolioView(pf);
+            }
+
+            // Redraw overlay lines on chart
+            renderCandleChart();
+        }
+
+        function updateAnalystCard(prefix, a) {
+            if (!a || !a.belief) return;
+            const bias = a.belief.bias || 'NEUTRAL';
+            const score = a.belief.score || 0.0;
+            const conf = Math.round((a.belief.confidence || 0.75) * 100);
+
+            const badge = document.getElementById(`card-badge-${prefix}`);
+            badge.innerText = `${bias} (${score >= 0 ? '+' : ''}${score.toFixed(2)}) · ${conf}%`;
+            badge.className = `badge-pill ${bias === 'BULLISH' ? 'badge-bull' : (bias === 'BEARISH' ? 'badge-bear' : 'badge-neutral')}`;
+
+            document.getElementById(`card-sum-${prefix}`).innerText = a.summary || '';
+        }
+
+        // -------------------------------------------------------------
+        // PORTFOLIO VIEW UPDATER
+        // -------------------------------------------------------------
+        function updatePortfolioView(pf) {
+            if (!pf) return;
+            document.getElementById('header-equity').innerText = `$${pf.total_equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('pf-equity').innerText = `$${pf.total_equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
+            document.getElementById('pf-cash').innerText = `Tiền mặt: $${pf.cash_balance.toLocaleString('en-US', {minimumFractionDigits: 2})} USD`;
+            document.getElementById('pf-realized').innerText = `$${(pf.total_realized_pnl || 0.0).toFixed(2)}`;
+            document.getElementById('pf-realized').className = `stat-card-num ${(pf.total_realized_pnl || 0) >= 0 ? 'text-green' : 'text-red'}`;
+            document.getElementById('pf-winrate').innerText = `${pf.win_rate_pct || 0}%`;
+            document.getElementById('pf-maxdd').innerText = `${pf.max_drawdown_pct || 0}%`;
+            document.getElementById('pf-dailydd').innerText = `Daily Drawdown: ${pf.daily_drawdown_pct || 0}%`;
+            document.getElementById('pf-closed-count').innerText = pf.closed_trades_count || 0;
+
+            const posCount = (pf.open_positions || []).length;
+            document.getElementById('tab-pos-count').innerText = posCount;
+
+            // Render open positions table
+            const posTbody = document.getElementById('positions-tbody');
+            if (pf.open_positions && pf.open_positions.length > 0) {
+                posTbody.innerHTML = pf.open_positions.map(p => {
+                    const isWin = (p.unrealized_pnl || 0) >= 0;
+                    return `
+                        <tr>
+                            <td style="font-weight: 700; color: #38bdf8; font-family: var(--font-mono);">${p.symbol}</td>
+                            <td><span class="badge-pill badge-bull">${p.side}</span></td>
+                            <td style="text-align: right; font-family: var(--font-mono);">${p.amount}</td>
+                            <td style="text-align: right; font-family: var(--font-mono);">$${p.entry_price.toLocaleString()}</td>
+                            <td style="text-align: right; font-family: var(--font-mono);">$${p.current_price.toLocaleString()}</td>
+                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                                ${isWin ? '+' : ''}$${(p.unrealized_pnl || 0).toFixed(2)} (${isWin ? '+' : ''}${(p.unrealized_pnl_pct || 0).toFixed(2)}%)
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-red);">$${(p.stop_loss || 0).toLocaleString()}</td>
+                            <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-green);">$${(p.take_profit || 0).toLocaleString()}</td>
+                            <td style="text-align: center;">
+                                <button class="btn-close-pos" onclick="closePosition('${p.symbol}')">Đóng Vị Thế</button>
+                            </td>
+                        </tr>
+                    `;
+                }).join('');
+            } else {
+                posTbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted);">Chưa có vị thế mở nào.</td></tr>`;
+            }
+
+            // Render closed history table
+            const histTbody = document.getElementById('history-tbody');
+            if (pf.closed_trades && pf.closed_trades.length > 0) {
+                histTbody.innerHTML = pf.closed_trades.map(t => {
+                    const isWin = (t.realized_pnl || 0) >= 0;
+                    const dateStr = t.closed_at ? new Date(t.closed_at).toLocaleTimeString() : '--';
+                    return `
+                        <tr>
+                            <td style="color: var(--text-muted); font-family: var(--font-mono); font-size: 11.5px;">${dateStr}</td>
+                            <td style="font-weight: 700; font-family: var(--font-mono);">${t.symbol}</td>
+                            <td><span class="badge-pill badge-neutral">${t.side}</span></td>
+                            <td style="text-align: right; font-family: var(--font-mono);">$${t.entry_price.toLocaleString()}</td>
+                            <td style="text-align: right; font-family: var(--font-mono);">$${t.exit_price.toLocaleString()}</td>
+                            <td style="text-align: right; font-family: var(--font-mono);">${t.amount}</td>
+                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                                ${isWin ? '+' : ''}$${t.realized_pnl.toFixed(2)}
+                            </td>
+                            <td style="text-align: right; font-family: var(--font-mono); color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
+                                ${isWin ? '+' : ''}${t.realized_pnl_pct.toFixed(2)}%
+                            </td>
+                            <td><span class="badge-pill badge-neutral">${t.reason || 'MANUAL'}</span></td>
+                        </tr>
+                    `;
+                }).join('');
+            }
+        }
+
+        async function closePosition(symbol) {
+            if (!confirm(`Bạn có chắc chắn muốn đóng vị thế ${symbol} ngay bây giờ không?`)) return;
+            try {
+                const res = await fetch(`/api/close-position?symbol=${encodeURIComponent(symbol)}`, { method: 'POST' });
+                const json = await res.json();
+                showToast(`Đã đóng vị thế ${symbol}. PnL: $${json.realized_pnl || 0}`);
+                fetchPortfolio();
+            } catch (err) {
+                showToast(`Lỗi đóng vị thế: ${err.message}`, false);
+            }
+        }
+
+        async function executePaperTrade() {
+            showToast("Lệnh đã được hệ thống khớp vào tài khoản Paper Trade!");
+            switchTab('tab-portfolio');
+            fetchPortfolio();
+        }
+
+        async function fetchPortfolio() {
+            try {
+                const res = await fetch('/api/portfolio');
+                const pf = await res.json();
+                updatePortfolioView(pf);
+            } catch (e) {
+                console.warn("Portfolio fetch error:", e);
+            }
+        }
+
+        // -------------------------------------------------------------
+        // INITIALIZATION
+        // -------------------------------------------------------------
+        window.addEventListener('DOMContentLoaded', () => {
+            initWebSocket();
+            loadMarketScreener();
+            fetchAndRenderCandles(currentSymbol, currentTimeframe);
+            fetchPortfolio();
+
+            fetch('/api/status').then(r => r.json()).then(st => {
+                if (st.model_reasoning) document.getElementById('header-model').innerText = st.model_reasoning;
+                if (st.portfolio) updatePortfolioView(st.portfolio);
+            }).catch(e => console.warn(e));
+
+            // Resize listener for responsive chart
+            window.addEventListener('resize', () => {
+                renderCandleChart();
+                renderRadarChart();
+            });
+        });
+    </script>
+</body>
+</html>

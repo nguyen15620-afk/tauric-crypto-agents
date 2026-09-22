@@ -1,0 +1,15 @@
+version: "3.8"
+
+services:
+  trading-terminal:
+    build: .
+    container_name: tauric_crypto_agent
+    restart: unless-stopped
+    ports:
+      - "8000:8000"
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY:-}
+      - MODEL_ANALYST=${MODEL_ANALYST:-gemini-3.5-flash-lite}
+      - MODEL_REASONING=${MODEL_REASONING:-gemini-3.8-flash}
+    volumes:
+      - ./crypto_agents.db:/app/crypto_agents.db
