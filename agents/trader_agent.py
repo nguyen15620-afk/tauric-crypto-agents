@@ -53,7 +53,15 @@ DIỄN BIẾN TRANH BIỆN BULL vs BEAR:
 NHIỆM VỤ CỦA BẠN:
 Đưa ra quyết định giao dịch cuối cùng có trách nhiệm, tính toán điểm chốt lời (TP) và cắt lỗ (SL) hợp lý:
 1. Quyết định: "BUY" (mua), "SELL" (bán/chốt lời), hoặc "HOLD" (đứng ngoài quan sát).
-2. Mức độ tự tin (conviction): Điểm từ 1 đến 10.
+2. Mức độ tự tin (conviction): Điểm số từ 1 đến 10 dựa theo thang đo bắt buộc dưới đây.
+
+QUY TẮC ĐÁNH GIÁ ĐỘ TỰ TIN (CONVICTION SCORE TỪ 1 ĐẾN 10) - TUYỆT ĐỐI KHÔNG MẶC ĐỊNH 7/10:
+• 9-10 (Rất Mạnh / High Edge): Cả 3 chuyên gia đồng thuận tuyệt đối cùng chiều (điểm > +0.5 hoặc < -0.5), không có phân kỳ, volume và nến xác nhận rõ rệt.
+• 7-8 (Mạnh / Clear Setup): Đa số chuyên gia ủng hộ (+0.3 đến +0.5), không có bất đồng gay gắt, tỷ lệ R:R thuận lợi.
+• 5-6 (Trung Bình / Moderate): Tín hiệu phân hóa nhẹ, một chuyên gia trung lập hoặc sau phản biện còn rủi ro, chỉ nên thăm dò nhỏ.
+• 3-4 (Thấp / High Conflict): Bất đồng quan điểm lớn (Debate gay gắt), tín hiệu đối nghịch nhau, thị trường giằng co -> NÊN CHỌN "HOLD".
+• 1-2 (Rất Thấp / Extreme Risk): Dữ liệu mâu thuẫn nặng nề hoặc biến động bất thường.
+
 3. Stop Loss (bắt buộc nếu BUY/SELL): Giá cụ thể.
 4. Take Profit: Giá cụ thể.
 5. Giải thích lý do (rationale) rõ ràng bằng tiếng Việt.
@@ -61,7 +69,7 @@ NHIỆM VỤ CỦA BẠN:
 Trả về DUY NHẤT một JSON hợp lệ:
 {{
     "action": "BUY" hoặc "SELL" hoặc "HOLD",
-    "conviction": integer từ 1 đến 10,
+    "conviction": integer từ 1 đến 10 (đánh giá chuẩn xác theo quy tắc trên),
     "current_price": {current_price},
     "target_price": float hoặc null,
     "stop_loss": float hoặc null,
@@ -73,6 +81,12 @@ Trả về DUY NHẤT một JSON hợp lệ:
     "risk_assessment": "Đánh giá quản trị rủi ro cho vị thế này"
 }}
 """
+        scores = [r.belief.score for r in reports] if reports else [0.0]
+        avg_score = sum(scores) / max(len(scores), 1)
+        pos_count = sum(1 for s in scores if s > 0.15)
+        neg_count = sum(1 for s in scores if s < -0.15)
+        spread = max(scores) - min(scores) if scores else 0.0
+
         try:
             response = self.llm.invoke(prompt)
             content = response.content.strip()
@@ -81,28 +95,71 @@ Trả về DUY NHẤT một JSON hợp lệ:
             elif content.startswith("```"):
                 content = content[3:-3].strip()
             data = json.loads(content)
+            
+            # --- Quantitative Conviction Calibration ---
+            # Prevent LLM from getting stuck at arbitrary values like 7:
+            # Calibrate conviction dynamically with the real mathematical consensus of analysts
+            raw_conv = int(data.get("conviction", 7))
+            chosen_action = data.get("action", "HOLD")
+
+            if chosen_action == "BUY":
+                if pos_count == 3 and avg_score >= 0.50:
+                    base_conv = 9
+                elif pos_count >= 2 and neg_count == 0:
+                    base_conv = 8 if avg_score >= 0.38 else 7
+                elif neg_count > 0:  # Conflict/debate happened
+                    base_conv = 5 if avg_score > 0.25 else 6
+                else:
+                    base_conv = 6
+            elif chosen_action == "SELL":
+                if neg_count == 3 and abs(avg_score) >= 0.50:
+                    base_conv = 9
+                elif neg_count >= 2 and pos_count == 0:
+                    base_conv = 8 if abs(avg_score) >= 0.38 else 7
+                elif pos_count > 0:
+                    base_conv = 5
+                else:
+                    base_conv = 6
+            else:  # HOLD
+                base_conv = 4 if spread > 0.35 else 5
+
+            # Calibrate: 50% LLM judgment + 50% quant consensus
+            calibrated_conv = int(round(raw_conv * 0.4 + base_conv * 0.6))
+            data["conviction"] = max(1, min(10, calibrated_conv))
+
             return TradeDecision(**data)
         except Exception as e:
             logger.warning(f"Chief Trader parsing error: {e}. Generating heuristic synthesis.")
             
-            # Simple weighted average of analyst scores
-            avg_score = sum([r.belief.score for r in reports]) / max(len(reports), 1)
-            
-            if avg_score > 0.25:
+            if avg_score > 0.20:
                 action = ActionEnum.BUY
-                conviction = min(max(int(5 + avg_score * 5), 5), 9)
+                if pos_count == 3 and avg_score >= 0.50:
+                    conviction = 9
+                elif pos_count >= 2 and neg_count == 0:
+                    conviction = 8 if avg_score >= 0.38 else 7
+                elif neg_count > 0:
+                    conviction = 5
+                else:
+                    conviction = 6
                 sl = current_price * 0.98
                 tp = current_price * 1.04
                 rationale = f"Đa số chỉ số và chuyên gia nghiêng về kịch bản TĂNG (điểm trung bình {avg_score:+.2f}). Đề xuất mở vị thế Mua thăm dò."
-            elif avg_score < -0.25:
+            elif avg_score < -0.20:
                 action = ActionEnum.SELL
-                conviction = min(max(int(5 + abs(avg_score) * 5), 5), 9)
+                if neg_count == 3 and abs(avg_score) >= 0.50:
+                    conviction = 9
+                elif neg_count >= 2 and pos_count == 0:
+                    conviction = 8 if abs(avg_score) >= 0.38 else 7
+                elif pos_count > 0:
+                    conviction = 5
+                else:
+                    conviction = 6
                 sl = current_price * 1.02
                 tp = current_price * 0.96
                 rationale = f"Đa số tín hiệu kỹ thuật và tâm lý nghiêng về kịch bản GIẢM (điểm {avg_score:+.2f}). Đề xuất Bán/Chốt lời phòng vệ."
             else:
                 action = ActionEnum.HOLD
-                conviction = 4
+                conviction = 4 if spread > 0.35 else 5
                 sl = None
                 tp = None
                 rationale = f"Tín hiệu thị trường đang giằng co trung lập (điểm {avg_score:+.2f}). Đề xuất đứng ngoài quan sát (HOLD)."

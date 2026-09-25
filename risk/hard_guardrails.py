@@ -23,6 +23,7 @@ class HardRiskGuardrails:
         self.max_position_size_pct = float(self.rules.get("max_position_size_pct", 15.0))
         self.max_open_positions = int(self.rules.get("max_open_positions", 3))
         self.max_daily_drawdown_pct = float(self.rules.get("max_daily_drawdown_pct", 4.0))
+        self.max_total_drawdown_pct = float(self.rules.get("max_total_drawdown_pct", 10.0))
         self.min_risk_reward_ratio = float(self.rules.get("min_risk_reward_ratio", 1.5))
         self.default_stop_loss_pct = float(self.rules.get("default_stop_loss_pct", 2.0))
         self.default_take_profit_pct = float(self.rules.get("default_take_profit_pct", 4.0))
@@ -35,18 +36,20 @@ class HardRiskGuardrails:
         self,
         decision: TradeDecision,
         snapshot: MarketSnapshot,
-        portfolio_state: Dict[str, Any]
+        portfolio_state: Optional[Dict[str, Any]] = None
     ) -> RiskValidation:
         """
-        Thoroughly audits the TradeDecision against hard risk boundaries.
-        Returns a RiskValidation object with final authorized action and sizing.
+        Thoroughly audits the TradeDecision against hard risk and mathematical boundaries.
+        Returns a RiskValidation object with final authorized action, validated SL/TP, and recommended allocation %.
         """
         rejection_reasons: List[str] = []
         warnings: List[str] = []
 
         current_price = snapshot.current_price
-        total_equity = float(portfolio_state.get("total_equity", 10000.0))
-        cash_balance = float(portfolio_state.get("cash_balance", 10000.0))
+        portfolio_state = portfolio_state or {}
+        has_portfolio = bool(portfolio_state)
+        total_equity = float(portfolio_state.get("total_equity", 0.0))
+        cash_balance = float(portfolio_state.get("cash_balance", 0.0))
         open_positions = portfolio_state.get("open_positions", [])
 
         # 0. Edge Case: Invalid non-positive market price
@@ -75,15 +78,21 @@ class HardRiskGuardrails:
                 warnings=["LLM recommended HOLD. No risk allocation needed."]
             )
 
-        # Use daily_drawdown_pct (session-based, resets daily) — NOT max_drawdown_pct
-        daily_drawdown_pct = float(portfolio_state.get("daily_drawdown_pct", 0.0))
+        # 2. Drawdown Breakers (if portfolio tracking active)
+        if has_portfolio:
+            daily_drawdown_pct = float(portfolio_state.get("daily_drawdown_pct", 0.0))
+            if daily_drawdown_pct >= self.max_daily_drawdown_pct:
+                rejection_reasons.append(
+                    f"Daily drawdown of {daily_drawdown_pct:.2f}% exceeds hard limit of "
+                    f"{self.max_daily_drawdown_pct:.2f}%. Trading halted for today."
+                )
 
-        # 2. Daily Drawdown Breaker
-        if daily_drawdown_pct >= self.max_daily_drawdown_pct:
-            rejection_reasons.append(
-                f"Daily drawdown of {daily_drawdown_pct:.2f}% exceeds hard limit of "
-                f"{self.max_daily_drawdown_pct:.2f}%. Trading halted for today."
-            )
+            total_drawdown_pct = float(portfolio_state.get("max_drawdown_pct", 0.0))
+            if total_drawdown_pct >= self.max_total_drawdown_pct:
+                rejection_reasons.append(
+                    f"Total portfolio drawdown of {total_drawdown_pct:.2f}% exceeds hard limit of "
+                    f"{self.max_total_drawdown_pct:.2f}%. All trading halted."
+                )
 
         # 3. Market Volatility Circuit Breaker
         if self.cb_enabled:
@@ -100,8 +109,8 @@ class HardRiskGuardrails:
                         f"exceeds max threshold ({self.cb_max_price_change_pct:.2f}%)."
                     )
 
-        # 4. Open Positions Limit (only block additional BUYs)
-        if len(open_positions) >= self.max_open_positions and decision.action == ActionEnum.BUY:
+        # 4. Open Positions Limit (only block additional BUYs if portfolio is active)
+        if has_portfolio and len(open_positions) >= self.max_open_positions and decision.action == ActionEnum.BUY:
             rejection_reasons.append(
                 f"Maximum open positions ({self.max_open_positions}) reached. "
                 f"Cannot open additional positions."
@@ -182,23 +191,28 @@ class HardRiskGuardrails:
                 )
 
         # ------------------------------------------------------------------
-        # 7. Position Sizing Calculation
-        # Capital risk = Total Equity * max_portfolio_risk_pct (e.g., $10,000 * 2% = $200 risk)
-        # Position size = Capital risk / SL distance pct
+        # 7. Position Sizing & Allocation Recommendation
         # ------------------------------------------------------------------
-        sl_pct_decimal = max(sl_dist_pct / 100.0, 0.005)
-        risk_capital = total_equity * (self.max_portfolio_risk_pct / 100.0)
-        calculated_position_usd = risk_capital / sl_pct_decimal
+        if has_portfolio and total_equity > 0:
+            # Capital risk = Total Equity * max_portfolio_risk_pct (e.g., $10,000 * 2% = $200 risk)
+            sl_pct_decimal = max(sl_dist_pct / 100.0, 0.005)
+            risk_capital = total_equity * (self.max_portfolio_risk_pct / 100.0)
+            calculated_position_usd = risk_capital / sl_pct_decimal
 
-        # Hard cap at max_position_size_pct of equity AND available cash
-        max_allowed_usd = total_equity * (self.max_position_size_pct / 100.0)
-        final_position_usd = min(calculated_position_usd, max_allowed_usd, cash_balance)
-        final_position_pct = (final_position_usd / total_equity) * 100.0 if total_equity > 0 else 0.0
+            # Hard cap at max_position_size_pct of equity AND available cash
+            max_allowed_usd = total_equity * (self.max_position_size_pct / 100.0)
+            final_position_usd = min(calculated_position_usd, max_allowed_usd, cash_balance)
+            final_position_pct = (final_position_usd / total_equity) * 100.0 if total_equity > 0 else 0.0
 
-        if final_position_usd < 50.0:  # Minimum viable order
-            rejection_reasons.append(
-                f"Calculated position size (${final_position_usd:.2f}) is below minimum viable threshold ($50)."
-            )
+            if final_position_usd < 50.0:  # Minimum viable order
+                rejection_reasons.append(
+                    f"Calculated position size (${final_position_usd:.2f}) is below minimum viable threshold ($50)."
+                )
+        else:
+            # Pure Advisory Mode: Recommended allocation % capped by max_position_size_pct
+            suggested_pct = float(decision.suggested_position_size_pct or 8.0)
+            final_position_pct = min(suggested_pct, self.max_position_size_pct)
+            final_position_usd = 0.0
 
         approved = (len(rejection_reasons) == 0)
         final_action = decision.action if approved else ActionEnum.HOLD

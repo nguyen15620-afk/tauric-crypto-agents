@@ -8,7 +8,6 @@ class TradingAgentState(TypedDict):
     symbol: str
     timeframe: str
     snapshot: Optional[MarketSnapshot]
-    portfolio_state: Dict[str, Any]
     analyst_reports: List[AnalystReport]
     divergence_score: float
     needs_debate: bool
@@ -16,6 +15,6 @@ class TradingAgentState(TypedDict):
     debate_round: int
     raw_decision: Optional[TradeDecision]
     risk_validation: Optional[RiskValidation]
-    execution_result: Optional[Dict[str, Any]]
     # Annotated with operator.add so each node APPENDS to logs instead of replacing
     logs: Annotated[List[str], operator.add]
+

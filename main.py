@@ -18,24 +18,21 @@ import uvicorn
 
 from config.settings import settings
 from agents.graph import TradingAgentGraph
-from execution.paper_engine import PaperExecutionEngine
 from storage.memory_db import MemoryDB
-from backtest.runner import BacktestRunner
 from data.ccxt_feed import CCXTMarketFeed
 
 console = Console()
 
 def run_advisory_cycle(symbol: str = "BTC/USDT", timeframe: str = "15m"):
-    console.print(Panel(f"[bold cyan]KÍCH HOẠT CHU TRÌNH PHÂN TÍCH ĐA AGENT (CRYPTO TRADING)[/bold cyan]\n"
+    console.print(Panel(f"[bold cyan]KÍCH HOẠT CHU TRÌNH PHÂN TÍCH ĐA AGENT (CRYPTO ADVISORY)[/bold cyan]\n"
                         f"Cặp: [yellow]{symbol}[/yellow] | Khung: [yellow]{timeframe}[/yellow] | Model: [green]{settings.MODEL_REASONING}[/green]",
-                        title="Tauric Multi-Agent System", border_style="blue"))
+                        title="Tauric AI Multi-Agent Advisory", border_style="blue"))
 
     db = MemoryDB()
-    engine = PaperExecutionEngine(db=db)
     graph = TradingAgentGraph()
 
     with console.status("[bold green]Đang thu thập dữ liệu & chạy hội đồng chuyên gia...[/bold green]"):
-        state = graph.run_cycle(symbol=symbol, timeframe=timeframe, portfolio_state=engine.get_state_dict())
+        state = graph.run_cycle(symbol=symbol, timeframe=timeframe)
         cycle_id = db.save_decision_cycle(state)
 
     snapshot = state.get("snapshot")
@@ -61,9 +58,9 @@ def run_advisory_cycle(symbol: str = "BTC/USDT", timeframe: str = "15m"):
 
     # 2. Parallel Analysts
     a_table = Table(title="2. Báo Cáo Đội Chuyên Gia (Parallel Analysts)", border_style="magenta")
-    a_table.add_column("Agent", style="cyan")
+    a_table.add_column("Agent Chuyên Môn", style="cyan")
     a_table.add_column("Thiên Hướng", style="bold")
-    a_table.add_column("Điểm Tin Cậy", justify="center")
+    a_table.add_column("Độ Tin Cậy", justify="center")
     a_table.add_column("Tóm Tắt Nhận Định")
     
     for r in reports:
@@ -77,67 +74,51 @@ def run_advisory_cycle(symbol: str = "BTC/USDT", timeframe: str = "15m"):
     console.print(a_table)
 
     # 3. Consensus & Debate
-    console.print(f"\n[bold yellow]3. Thẩm Định Bất Đồng (Chivu171 Consensus Validator):[/bold yellow]")
-    console.print(f"Độ lệch ý kiến: [bold]{divergence:.2f}[/bold] (Ngưỡng kích hoạt tranh luận: 0.35)")
+    console.print(f"\n[bold yellow]3. Thẩm Định Bất Đồng (Consensus Validator):[/bold yellow]")
+    console.print(f"Độ lệch ý kiến giữa các Analyst: [bold]{divergence:.2f}[/bold] (Ngưỡng tranh luận: 0.35)")
     
     if turns:
         console.print(Panel(
             "\n\n".join([f"[bold {'green' if 'Bull' in d.speaker else 'red'}]{d.speaker} (Vòng {d.round_num}):[/bold {'green' if 'Bull' in d.speaker else 'red'}]\n{d.argument}" for d in turns]),
-            title="Đấu Trường Tranh Luận (Bull vs Bear Debate Arena)", border_style="yellow"
+            title="Đấu Trường Tranh Biện (Bull vs Bear Debate Arena)", border_style="yellow"
         ))
     else:
         console.print("[green]✓ Đạt độ đồng thuận cao giữa các Analyst. Bỏ qua vòng tranh luận.[/green]")
 
-    # 4. Chief Trader Decision
+    # 4. Master Synthesized Recommendation (Chief Investment Officer)
     if decision:
-        act_color = "green" if decision.action.value == "BUY" else ("red" if decision.action.value == "SELL" else "yellow")
+        final_action = risk_val.final_action.value if risk_val else decision.action.value
+        act_color = "green" if final_action == "BUY" else ("red" if final_action == "SELL" else "yellow")
+        sl_val = risk_val.stop_loss if risk_val and risk_val.stop_loss > 0 else decision.stop_loss
+        tp_val = risk_val.take_profit if risk_val and risk_val.take_profit > 0 else decision.take_profit
+        alloc_pct = risk_val.approved_position_size_pct if risk_val else decision.suggested_position_size_pct
+
+        details = [
+            f"Khuyến Nghị Hành Động: [bold {act_color}]{final_action}[/bold {act_color}]  |  Độ Tự Tin: [bold]{decision.conviction}/10[/bold]",
+            f"Giá Thị Trường: [bold]${snapshot.current_price:,.2f}[/bold]" if snapshot else "",
+            f"Vùng Cắt Lỗ (Stop Loss): [red]${sl_val:,.2f}[/red]" if sl_val else "Vùng Cắt Lỗ: Không áp dụng",
+            f"Vùng Chốt Lời (Take Profit): [green]${tp_val:,.2f}[/green]" if tp_val else "Vùng Chốt Lời: Không áp dụng",
+            f"Tỷ Trọng Vốn Khuyến Nghị: [bold]{alloc_pct:.1f}%[/bold]" if alloc_pct > 0 else "",
+            "",
+            f"[bold]Luận Điểm Tổng Hợp:[/bold]\n{decision.rationale}",
+        ]
+
+        if decision.bull_case_summary:
+            details.append(f"\n[green]▲ Góc nhìn Bull:[/green] {decision.bull_case_summary}")
+        if decision.bear_case_summary:
+            details.append(f"[red]▼ Rủi ro Bear:[/red] {decision.bear_case_summary}")
+        if decision.risk_assessment:
+            details.append(f"[yellow]⚠ Đánh giá rủi ro:[/yellow] {decision.risk_assessment}")
+
+        if risk_val and risk_val.warnings:
+            details.append(f"\n[bold yellow]Lưu Ý / Cảnh Báo An Toàn:[/bold yellow] {'; '.join(risk_val.warnings)}")
+
         console.print(Panel(
-            f"Khuyến Nghị: [bold {act_color}]{decision.action.value}[/bold {act_color}] | Độ Tự Tin: [bold]{decision.conviction}/10[/bold]\n"
-            f"Stop Loss: [red]${decision.stop_loss:,.2f}[/red] | Take Profit: [green]${decision.take_profit:,.2f}[/green]\n"
-            f"Khối Lượng Đề Xuất: [bold]{decision.suggested_position_size_pct}%[/bold]\n\n"
-            f"[italic]Luận điểm: {decision.rationale}[/italic]",
-            title="4. Quyết Định Của Chief Trader (CIO)", border_style="green"
+            "\n".join([d for d in details if d is not None]),
+            title="4. KHUYẾN NGHỊ ĐẦU TƯ TỔNG HỢP (CHIEF INVESTMENT OFFICER)",
+            border_style="green" if final_action == "BUY" else ("red" if final_action == "SELL" else "yellow")
         ))
 
-    # 5. Hard Risk Guardrails
-    if risk_val:
-        r_status = "[bold green]PHÊ DUYỆT[/bold green]" if risk_val.approved else "[bold red]TỪ CHỐI / ĐIỀU CHỈNH[/bold red]"
-        console.print(Panel(
-            f"Trạng Thái Thẩm Định Cứng: {r_status}\n"
-            f"Lệnh Cho Phép: [bold]{risk_val.final_action.value}[/bold] | Cấp Vốn: [bold]{risk_val.approved_position_size_pct}% (${risk_val.approved_position_usd:,.2f})[/bold]\n"
-            f"Cắt Lỗ: ${risk_val.stop_loss:,.2f} | Chốt Lời: ${risk_val.take_profit:,.2f}\n"
-            f"Cảnh Báo: {', '.join(risk_val.warnings) if risk_val.warnings else 'Không có'}",
-            title="5. Quản Trị Rủi Ro Cứng (Non-LLM Guardrails)", border_style="red"
-        ))
-
-    # Execute on paper
-    if risk_val and snapshot:
-        res = engine.execute_validation(risk_val, snapshot, cycle_id=cycle_id)
-        console.print(f"[bold cyan]Kết quả khớp lệnh ảo (Paper Trading):[/bold cyan] {res}")
-
-def run_backtest_mode(symbol: str = "BTC/USDT"):
-    console.print(Panel(f"[bold green]CHẠY ENGINE BACKTEST LỊCH SỬ CHO {symbol}[/bold green]", border_style="green"))
-    feed = CCXTMarketFeed()
-    df = feed.fetch_ohlcv_df(symbol=symbol, timeframe="15m", limit=80)
-    
-    runner = BacktestRunner(initial_capital=10000.0)
-    results = runner.run(df=df, symbol=symbol, step_interval=10, warmup_period=30)
-
-    res_table = Table(title=f"KẾT QUẢ BACKTEST: {symbol}", border_style="green")
-    res_table.add_column("Chỉ Số Đánh Giá", style="bold cyan")
-    res_table.add_column("Giá Trị", style="bold")
-    
-    res_table.add_row("Số nến đã kiểm thử", str(results["total_bars_tested"]))
-    res_table.add_row("Vốn khởi điểm", f"${results['initial_capital']:,.2f}")
-    res_table.add_row("Vốn kết thúc (Equity)", f"${results['final_equity']:,.2f}")
-    res_table.add_row("Lợi nhuận ròng (Net Return)", f"{results['net_return_pct']:+.2f}%")
-    res_table.add_row("Max Drawdown (All-time)", f"{results['max_drawdown_pct']:.2f}%")
-    res_table.add_row("Sharpe Ratio (Annualised)", f"{results.get('sharpe_ratio', 0):.3f}")
-    res_table.add_row("Tổng số lệnh đóng", str(results["total_trades"]))
-    res_table.add_row("Tỷ lệ thắng (Win Rate)", f"{results['win_rate_pct']:.1f}%")
-    res_table.add_row("Tổng số token LLM ước tính", f"{results['estimated_tokens_used']:,} tokens")
-    res_table.add_row("Chi phí API ước tính (Gemini Flash Lite)", f"${results['estimated_api_cost_usd']:.4f} USD")
-    console.print(res_table)
 
 def run_screener_mode():
     from data.screener import MarketScreener
@@ -176,9 +157,9 @@ def run_screener_mode():
         run_advisory_cycle(symbol=best_symbol)
 
 def main():
-    parser = argparse.ArgumentParser(description="Crypto Multi-Agent Trading System")
-    parser.add_argument("--mode", choices=["advisory", "server", "backtest", "scan"], default="advisory",
-                        help="Chế độ chạy: advisory (1 mã), server (web dashboard), backtest (lịch sử), scan (tự tìm coin tiềm năng nhất)")
+    parser = argparse.ArgumentParser(description="Tauric AI Crypto Advisory System")
+    parser.add_argument("--mode", choices=["advisory", "scan", "server"], default="advisory",
+                        help="Chế độ chạy: advisory (tư vấn 1 mã coin), scan (quét coin tiềm năng nhất), server (web dashboard)")
     parser.add_argument("--symbol", default="BTC/USDT", help="Cặp giao dịch (mặc định BTC/USDT)")
     parser.add_argument("--timeframe", default="15m", help="Khung thời gian nến (mặc định 15m)")
     parser.add_argument("--port", type=int, default=8000, help="Cổng chạy server (mặc định 8000)")
@@ -189,8 +170,6 @@ def main():
         run_advisory_cycle(symbol=args.symbol, timeframe=args.timeframe)
     elif args.mode == "scan":
         run_screener_mode()
-    elif args.mode == "backtest":
-        run_backtest_mode(symbol=args.symbol)
     elif args.mode == "server":
         console.print(f"[bold green]Khởi chạy Web Dashboard tại http://localhost:{args.port}[/bold green]")
         uvicorn.run("server.app:app", host="0.0.0.0", port=args.port, reload=False)

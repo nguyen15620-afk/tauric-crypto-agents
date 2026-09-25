@@ -147,3 +147,48 @@ class MemoryDB:
                 item["risk"] = json.loads(item["risk_json"]) if item["risk_json"] else {}
                 results.append(item)
             return results
+
+    def save_trade(self, trade_record: Dict[str, Any], cycle_id: Optional[int] = None) -> int:
+        """
+        Saves a closed paper trade into the paper_trades table.
+        Returns the inserted trade record ID.
+        """
+        with self._get_connection() as conn:
+            cursor = conn.cursor()
+            cursor.execute("""
+            INSERT INTO paper_trades (
+                cycle_id, symbol, side, entry_price, amount, usd_value,
+                fee, stop_loss, take_profit, status, exit_price, exit_time,
+                realized_pnl, realized_pnl_pct
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """, (
+                cycle_id,
+                trade_record.get("symbol"),
+                trade_record.get("side"),
+                trade_record.get("entry_price"),
+                trade_record.get("amount"),
+                trade_record.get("cost_basis"),
+                trade_record.get("fee"),
+                trade_record.get("stop_loss", 0.0),
+                trade_record.get("take_profit", 0.0),
+                trade_record.get("reason", "CLOSED"),
+                trade_record.get("exit_price"),
+                trade_record.get("closed_at"),
+                trade_record.get("realized_pnl"),
+                trade_record.get("realized_pnl_pct")
+            ))
+            conn.commit()
+            return cursor.lastrowid
+
+    def get_recent_trades(self, limit: int = 50) -> List[Dict[str, Any]]:
+        """
+        Returns recent closed paper trades from SQLite.
+        """
+        with self._get_connection() as conn:
+            conn.row_factory = sqlite3.Row
+            cursor = conn.cursor()
+            cursor.execute("""
+            SELECT * FROM paper_trades ORDER BY id DESC LIMIT ?
+            """, (limit,))
+            return [dict(r) for r in cursor.fetchall()]
+

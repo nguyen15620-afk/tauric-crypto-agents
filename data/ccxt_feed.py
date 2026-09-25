@@ -91,8 +91,20 @@ class CCXTMarketFeed:
                 "volume": float(ticker.get("baseVolume") or 1200.0),
             }
         except Exception as e:
-            logger.warning(f"CCXT fetch_ticker error ({e}). Returning fallback ticker.")
-            return self._FALLBACK_TICKER.copy()
+            fallback = self._FALLBACK_TICKER.copy()
+            if "ETH" in symbol:
+                fallback["last"], fallback["high"], fallback["low"] = 3200.0, 3300.0, 3100.0
+            elif "SOL" in symbol:
+                fallback["last"], fallback["high"], fallback["low"] = 150.0, 160.0, 140.0
+            elif "BTC" not in symbol:
+                fallback["last"], fallback["high"], fallback["low"] = 10.0, 11.0, 9.0
+
+            logger.warning(
+                f"[CCXTFeed] WARNING: fetch_ticker failed for {symbol} ({e}). "
+                f"Using simulated fallback ticker (Price: ${fallback['last']:,.2f}). "
+                f"This data is NOT live market data!"
+            )
+            return fallback
 
     def fetch_orderbook_metrics(self, symbol: str = "BTC/USDT", limit: int = 20) -> Dict[str, float]:
         """

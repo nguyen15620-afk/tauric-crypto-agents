@@ -66,7 +66,24 @@ class TestHardRiskGuardrails(unittest.TestCase):
         val = self.guard.evaluate(decision, self.snapshot, portfolio_dd)
         self.assertFalse(val.approved)
         self.assertEqual(val.final_action, ActionEnum.HOLD)
-        self.assertTrue(any("drawdown" in r.lower() for r in val.rejection_reasons))
+        self.assertTrue(any("daily drawdown" in r.lower() for r in val.rejection_reasons))
+
+    def test_reject_when_total_drawdown_exceeded(self):
+        portfolio_dd = self.portfolio.copy()
+        portfolio_dd["max_drawdown_pct"] = 12.5  # Exceeds max_total_drawdown_pct (10.0)
+        decision = TradeDecision(
+            action=ActionEnum.BUY,
+            conviction=9,
+            current_price=68000.0,
+            stop_loss=66000.0,
+            take_profit=72000.0,
+            suggested_position_size_pct=10.0,
+            rationale="Attempted trade under deep total drawdown"
+        )
+        val = self.guard.evaluate(decision, self.snapshot, portfolio_dd)
+        self.assertFalse(val.approved)
+        self.assertEqual(val.final_action, ActionEnum.HOLD)
+        self.assertTrue(any("total portfolio drawdown" in r.lower() for r in val.rejection_reasons))
 
     def test_auto_correct_missing_sl_tp(self):
         decision = TradeDecision(
@@ -188,6 +205,23 @@ class TestHardRiskGuardrails(unittest.TestCase):
         self.assertEqual(val.approved_position_usd, 0.0)
         self.assertEqual(val.approved_position_size_pct, 0.0)
 
+    def test_advisory_mode_without_portfolio(self):
+        decision = TradeDecision(
+            action=ActionEnum.BUY,
+            conviction=8,
+            current_price=68000.0,
+            stop_loss=66640.0,   # 2% SL
+            take_profit=70720.0, # 4% TP
+            suggested_position_size_pct=10.0,
+            rationale="Advisory setup without portfolio"
+        )
+        val = self.guard.evaluate(decision, self.snapshot, portfolio_state=None)
+        self.assertTrue(val.approved)
+        self.assertEqual(val.final_action, ActionEnum.BUY)
+        self.assertEqual(val.approved_position_size_pct, 10.0)
+        self.assertEqual(val.approved_position_usd, 0.0)
+
 
 if __name__ == "__main__":
     unittest.main()
+

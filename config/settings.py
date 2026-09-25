@@ -24,7 +24,10 @@ class Settings(BaseSettings):
     # Analyst models (high throughput, 500 RPD, 15 RPM): Gemini 3.5 Flash Lite / 3.1 Flash Lite
     MODEL_ANALYST: str = "gemini-3.5-flash-lite"
     
-    # Reasoning models (Chief Trader & Debate - deep reasoning):
+    # Debater models (high throughput, 500 RPD, 15 RPM): Gemini 3.5 Flash Lite
+    MODEL_DEBATER: str = "gemini-3.5-flash-lite"
+
+    # Reasoning models (Chief Trader - deep reasoning, 20 RPD, 5 RPM):
     # Gemini 3.8 Flash / Gemini 3.7 Flash / Gemini 3.6 Flash / Gemini 3.5 Flash
     MODEL_REASONING: str = "gemini-3.8-flash"
     

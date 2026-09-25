@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime, date
+from datetime import datetime, date, timezone
 from typing import Dict, Any, List, Optional
 from core.types import ActionEnum, RiskValidation, MarketSnapshot, Position
 from config.settings import RISK_RULES
@@ -158,7 +158,7 @@ class PaperExecutionEngine:
                 current_price=round(current_price, 2),
                 stop_loss=risk_val.stop_loss,
                 take_profit=risk_val.take_profit,
-                entry_time=datetime.utcnow(),
+                entry_time=datetime.now(timezone.utc),
                 unrealized_pnl=0.0,
                 unrealized_pnl_pct=0.0
             )
@@ -252,9 +252,18 @@ class PaperExecutionEngine:
             "realized_pnl_pct": round(realized_pnl_pct, 2),
             "fee": round(exit_fee, 2),
             "reason": reason,
-            "closed_at": datetime.utcnow().isoformat()
+            "closed_at": datetime.now(timezone.utc).isoformat(),
+            "stop_loss": pos.stop_loss,
+            "take_profit": pos.take_profit,
         }
         self.closed_trades.append(trade_record)
+
+        # Persist trade record to SQLite
+        if self.db:
+            try:
+                self.db.save_trade(trade_record, cycle_id=cycle_id)
+            except Exception as e:
+                logger.warning(f"Failed to persist trade to database: {e}")
 
         logger.info(
             f"[Paper Trade] Closed {symbol} ({reason}): PnL: ${realized_pnl:+,.2f} ({realized_pnl_pct:+.2f}%)"

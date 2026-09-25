@@ -30,7 +30,7 @@ class DebateTurn(BaseModel):
     speaker: str  # e.g., 'Bull Researcher' or 'Bear Researcher'
     argument: str
     counter_points: Optional[str] = None
-    stance_score: float  # -1.0 to 1.0
+    stance_score: float = Field(..., ge=-1.0, le=1.0, description="Directional stance: -1.0 (Strong Bear) to +1.0 (Strong Bull)")
 
 class TradeDecision(BaseModel):
     action: ActionEnum
@@ -51,7 +51,7 @@ class RiskValidation(BaseModel):
     final_action: ActionEnum
     original_action: ActionEnum
     approved_position_size_pct: float
-    approved_position_usd: float
+    approved_position_usd: float = 0.0
     stop_loss: float
     take_profit: float
     rejection_reasons: List[str] = Field(default_factory=list)

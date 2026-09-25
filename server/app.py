@@ -12,23 +12,29 @@ from config.settings import settings
 from data.ccxt_feed import CCXTMarketFeed
 from data.screener import MarketScreener
 from agents.graph import TradingAgentGraph
-from execution.paper_engine import PaperExecutionEngine
 from storage.memory_db import MemoryDB
 
 logging.basicConfig(level=logging.INFO, format="%(asctime)s [%(levelname)s] %(name)s: %(message)s")
 logger = logging.getLogger("FastAPIServer")
 
 app = FastAPI(
-    title="Crypto Multi-Agent Trading System",
-    version="2.0.0",
-    description="LangGraph multi-agent crypto advisory with real-time WebSocket streaming"
+    title="Crypto Multi-Agent Advisory Intelligence System",
+    version="3.0.0",
+    description="LangGraph multi-agent crypto market analysis, debate, and strategic advisory with real-time WebSocket streaming"
 )
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=[
+        "http://localhost:8000",
+        "http://127.0.0.1:8000",
+        "http://localhost:3000",
+        "http://127.0.0.1:3000",
+        "http://localhost:5173",
+        "http://127.0.0.1:5173",
+    ],
     allow_credentials=True,
-    allow_methods=["*"],
+    allow_methods=["GET", "POST", "OPTIONS"],
     allow_headers=["*"],
 )
 
@@ -36,7 +42,6 @@ app.add_middleware(
 market_feed = CCXTMarketFeed(exchange_id=settings.DEFAULT_EXCHANGE)
 market_screener = MarketScreener(exchange_id=settings.DEFAULT_EXCHANGE)
 memory_db = MemoryDB()
-paper_engine = PaperExecutionEngine(db=memory_db)
 trading_graph = TradingAgentGraph(exchange_feed=market_feed)
 
 # Prevent concurrent multi-agent cycle runs that could exhaust rate limits
@@ -77,17 +82,17 @@ manager = ConnectionManager()
 
 @app.get("/api/status")
 async def get_system_status():
-    """Returns system status, model configuration, and current portfolio state."""
+    """Returns system status, model configuration, and server metrics."""
     return {
         "status": "online",
         "exchange": settings.DEFAULT_EXCHANGE,
         "default_symbol": settings.DEFAULT_SYMBOL,
         "llm_provider": settings.DEFAULT_LLM_PROVIDER,
         "model_analyst": settings.MODEL_ANALYST,
+        "model_debater": getattr(settings, "MODEL_DEBATER", settings.MODEL_ANALYST),
         "model_reasoning": settings.MODEL_REASONING,
         "has_gemini_key": bool(settings.effective_gemini_key),
-        "active_ws_clients": len(manager.active_connections),
-        "portfolio": paper_engine.get_state_dict()
+        "active_ws_clients": len(manager.active_connections)
     }
 
 
@@ -95,7 +100,6 @@ async def get_system_status():
 async def get_market_data(symbol: str = settings.DEFAULT_SYMBOL):
     """Returns full MarketSnapshot for a symbol (live price + indicators + sentiment)."""
     try:
-        # Run blocking CCXT fetch in a thread pool to avoid blocking event loop
         snapshot = await asyncio.to_thread(
             market_feed.get_market_snapshot, symbol=symbol
         )
@@ -114,7 +118,7 @@ async def get_candles(symbol: str = settings.DEFAULT_SYMBOL, timeframe: str = "1
         )
         candles = []
         for _, row in df.iterrows():
-            ts = int(row["timestamp"] / 1000) if "timestamp" in row and not row.isna().get("timestamp", False) else int(datetime.utcnow().timestamp())
+            ts = int(row["timestamp"] / 1000) if "timestamp" in row and not row.isna().get("timestamp", False) else int(datetime.now().timestamp())
             candles.append({
                 "time": ts,
                 "open": round(float(row["open"]), 4),
@@ -127,24 +131,6 @@ async def get_candles(symbol: str = settings.DEFAULT_SYMBOL, timeframe: str = "1
     except Exception as e:
         logger.error(f"Candles fetch failed for {symbol}: {e}")
         raise HTTPException(status_code=503, detail=f"Candles unavailable: {e}")
-
-
-@app.get("/api/portfolio")
-async def get_portfolio():
-    """Returns current paper portfolio state and history."""
-    return paper_engine.get_state_dict()
-
-
-@app.post("/api/close-position")
-async def close_position_endpoint(symbol: str):
-    """Manually closes an open paper trading position."""
-    result = paper_engine.close_position(symbol=symbol)
-    await manager.broadcast({
-        "type": "PORTFOLIO_UPDATE",
-        "portfolio": paper_engine.get_state_dict(),
-        "closed_trade": result
-    })
-    return result
 
 
 @app.get("/api/scan")
@@ -169,10 +155,9 @@ async def get_history(limit: int = 20):
 @app.post("/api/trigger-cycle")
 async def trigger_cycle(symbol: str = settings.DEFAULT_SYMBOL):
     """
-    Triggers one complete multi-agent deliberation cycle.
+    Triggers one complete multi-agent advisory deliberation cycle.
     Uses asyncio.to_thread() to run the blocking LangGraph call without
-    blocking the FastAPI event loop (allows WebSocket heartbeats to continue).
-    Prevents concurrent cycles with an asyncio.Lock to avoid rate limit exhaustion.
+    blocking the FastAPI event loop.
     """
     if _cycle_lock.locked():
         raise HTTPException(
@@ -181,7 +166,7 @@ async def trigger_cycle(symbol: str = settings.DEFAULT_SYMBOL):
         )
 
     async with _cycle_lock:
-        logger.info(f"Triggering multi-agent cycle for {symbol}")
+        logger.info(f"Triggering multi-agent advisory cycle for {symbol}")
 
         await manager.broadcast({
             "type": "CYCLE_START",
@@ -190,13 +175,10 @@ async def trigger_cycle(symbol: str = settings.DEFAULT_SYMBOL):
         })
 
         try:
-            # ✅ Run blocking graph.run_cycle() in thread pool — won't block event loop
             state = await asyncio.to_thread(
                 trading_graph.run_cycle,
                 symbol=symbol,
-                timeframe=settings.DEFAULT_TIMEFRAME,
-                portfolio_state=paper_engine.get_state_dict()
-                # No snapshot injected → live mode (fetches real data)
+                timeframe=settings.DEFAULT_TIMEFRAME
             )
         except Exception as e:
             logger.error(f"Multi-agent cycle failed for {symbol}: {e}")
@@ -209,14 +191,8 @@ async def trigger_cycle(symbol: str = settings.DEFAULT_SYMBOL):
 
         # Save to memory DB
         cycle_id = memory_db.save_decision_cycle(state)
-
-        # Execute risk-approved recommendation on paper portfolio
         snapshot = state.get("snapshot")
         risk_val = state.get("risk_validation")
-        exec_result = {"status": "NO_ACTION"}
-
-        if risk_val and snapshot:
-            exec_result = paper_engine.execute_validation(risk_val, snapshot, cycle_id=cycle_id)
 
         # Build broadcast payload
         payload = {
@@ -230,8 +206,6 @@ async def trigger_cycle(symbol: str = settings.DEFAULT_SYMBOL):
             "debate_turns": [d.model_dump(mode="json") for d in state.get("debate_turns", [])],
             "raw_decision": state.get("raw_decision").model_dump(mode="json") if state.get("raw_decision") else None,
             "risk_validation": risk_val.model_dump(mode="json") if risk_val else None,
-            "execution": exec_result,
-            "portfolio": paper_engine.get_state_dict(),
             "logs": state.get("logs", [])
         }
         await manager.broadcast(payload)
@@ -249,9 +223,9 @@ async def websocket_endpoint(websocket: WebSocket):
         # Send initial status on connect
         await websocket.send_json({
             "type": "CONNECTED",
-            "message": "Connected to Crypto Multi-Agent Trading System",
-            "portfolio": paper_engine.get_state_dict(),
+            "message": "Connected to Tauric AI Crypto Advisory Intelligence System",
             "model_analyst": settings.MODEL_ANALYST,
+            "model_debater": getattr(settings, "MODEL_DEBATER", settings.MODEL_ANALYST),
             "model_reasoning": settings.MODEL_REASONING,
         })
         while True:
@@ -259,7 +233,6 @@ async def websocket_endpoint(websocket: WebSocket):
             if data == "ping":
                 await websocket.send_json({"type": "pong", "ts": asyncio.get_event_loop().time()})
             else:
-                # Echo any unknown messages back as acknowledgement
                 await websocket.send_json({"type": "ack", "received": data})
     except WebSocketDisconnect:
         manager.disconnect(websocket)

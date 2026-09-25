@@ -36,7 +36,7 @@ class TradingAgentGraph:
         self.bear_researcher = BearResearcher()
         self.trader = ChiefTrader()
         self.hard_risk = HardRiskGuardrails()
-        self.max_debate_rounds = int(RISK_RULES.get("debate", {}).get("max_debate_rounds", 2))
+        self.max_debate_rounds = max(int(RISK_RULES.get("debate", {}).get("max_debate_rounds", 2)), 1)
 
         self.workflow = self._build_graph()
         self.app = self.workflow.compile()
@@ -156,14 +156,14 @@ class TradingAgentGraph:
     def node_hard_risk_guard(self, state: TradingAgentState) -> Dict[str, Any]:
         decision = state["raw_decision"]
         snapshot = state["snapshot"]
-        portfolio = state.get("portfolio_state", {})
 
-        risk_val = self.hard_risk.evaluate(decision, snapshot, portfolio)
+        risk_val = self.hard_risk.evaluate(decision, snapshot)
 
         status_txt = "PHÊ DUYỆT" if risk_val.approved else "TỪ CHỐI / ĐIỀU CHỈNH"
+        alloc_txt = f"| Tỷ trọng đề xuất: {risk_val.approved_position_size_pct}%" if risk_val.approved_position_size_pct > 0 else ""
         log = (
-            f"Risk Guardrails: {status_txt} -> Lệnh cuối: {risk_val.final_action.value} "
-            f"| Khối lượng: {risk_val.approved_position_size_pct}% (${risk_val.approved_position_usd:,.2f})"
+            f"Quality Guardrails: {status_txt} -> Khuyến nghị cuối: {risk_val.final_action.value} "
+            f"| SL: ${risk_val.stop_loss:,.2f} | TP: ${risk_val.take_profit:,.2f} {alloc_txt}"
         )
         return {
             "risk_validation": risk_val,
@@ -235,8 +235,8 @@ class TradingAgentGraph:
         self,
         symbol: str = "BTC/USDT",
         timeframe: str = "15m",
-        portfolio_state: Dict[str, Any] = None,
-        snapshot: Optional[MarketSnapshot] = None,  # ← Inject for backtest (avoids data leakage)
+        snapshot: Optional[MarketSnapshot] = None,
+        **kwargs  # Ignore any legacy kwargs like portfolio_state
     ) -> TradingAgentState:
         """
         Executes one full multi-agent deliberation cycle.
@@ -244,21 +244,13 @@ class TradingAgentGraph:
         Args:
             symbol: Trading pair symbol (e.g., 'BTC/USDT')
             timeframe: Candle timeframe (e.g., '15m')
-            portfolio_state: Current portfolio state dict from PaperExecutionEngine
-            snapshot: Optional pre-built MarketSnapshot. When provided (backtest mode),
-                      the fetch_data node is skipped to prevent future data leakage.
+            snapshot: Optional pre-built MarketSnapshot. When provided,
+                      the fetch_data node is skipped.
         """
         initial_state: TradingAgentState = {
             "symbol": symbol,
             "timeframe": timeframe,
-            # Pre-inject snapshot if provided (backtest mode prevents live data fetch)
             "snapshot": snapshot,
-            "portfolio_state": portfolio_state or {
-                "total_equity": 10000.0,
-                "cash_balance": 10000.0,
-                "open_positions": [],
-                "daily_drawdown_pct": 0.0,
-            },
             "analyst_reports": [],
             "divergence_score": 0.0,
             "needs_debate": False,
@@ -266,9 +258,9 @@ class TradingAgentGraph:
             "debate_round": 0,
             "raw_decision": None,
             "risk_validation": None,
-            "execution_result": None,
             "logs": []
         }
 
         final_state = self.app.invoke(initial_state)
         return final_state
+

@@ -1295,12 +1295,12 @@
                     <span class="tab-badge" id="tab-symbol-badge">BTC</span>
                 </button>
                 <button class="tab-btn" id="btn-tab-execute" onclick="switchTab('tab-execute')">
-                    <span>⚡ 3. Quyết Định</span>
+                    <span>⚡ 3. Khuyến Nghị</span>
                     <span class="tab-badge text-green" id="tab-signal-badge">READY</span>
                 </button>
-                <button class="tab-btn" id="btn-tab-portfolio" onclick="switchTab('tab-portfolio')">
-                    <span>💼 4. Danh Mục</span>
-                    <span class="tab-badge" id="tab-pos-count">0</span>
+                <button class="tab-btn" id="btn-tab-history" onclick="switchTab('tab-history')">
+                    <span>📜 4. Lịch Sử Tư Vấn</span>
+                    <span class="tab-badge" id="tab-history-badge">0</span>
                 </button>
             </nav>
         </div>
@@ -1318,12 +1318,6 @@
                 <span class="info-pill-label" id="header-symbol">BTC/USDT</span>
                 <span class="info-pill-val" id="header-price">$86,505.00</span>
                 <span class="price-badge-change badge-bull" id="header-change">+0.6%</span>
-            </div>
-
-            <!-- Portfolio Equity Quick View -->
-            <div class="info-pill" style="cursor: pointer;" onclick="switchTab('tab-portfolio')">
-                <span class="info-pill-label">Vốn Paper:</span>
-                <span class="info-pill-val text-green" id="header-equity">$10,000.00</span>
             </div>
 
             <!-- Fast Action Trigger -->
@@ -1395,11 +1389,11 @@
                         <div class="discovery-desc">Bộ lọc tự động quét các mã có volume đột biến, biến động 24h mạnh hoặc chạm vùng quá mua/quá bán.</div>
                     </div>
                 </div>
-                <div class="discovery-card" onclick="switchTab('tab-portfolio')">
-                    <div class="discovery-icon" style="background: rgba(139, 92, 246, 0.15); color: #c084fc;">📊</div>
+                <div class="discovery-card" onclick="switchTab('tab-execute')">
+                    <div class="discovery-icon" style="background: rgba(139, 92, 246, 0.15); color: #c084fc;">⚡</div>
                     <div>
-                        <div class="discovery-title">Tài Khoản Paper Trade</div>
-                        <div class="discovery-desc">Xem số dư vốn, các vị thế đang mở và lịch sử chốt lời/cắt lỗ với cơ chế trượt giá (slippage) thực tế.</div>
+                        <div class="discovery-title">Khuyến Nghị Chiến Lược</div>
+                        <div class="discovery-desc">Xem nhận định tổng hợp của Chief Trader, các mốc SL/TP, tỷ lệ R:R và tỷ trọng vốn khuyến nghị.</div>
                     </div>
                 </div>
             </div>
@@ -1640,7 +1634,7 @@
 
                     <!-- Big CTA to Jump to Execute -->
                     <button class="btn-view-decision-cta" onclick="switchTab('tab-execute')">
-                        <span>Xem Khuyến Nghị & Khớp Lệnh Chi Tiết</span>
+                        <span>Xem Khuyến Nghị Chiến Lược Chi Tiết</span>
                         <svg width="18" height="18" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
                     </button>
                 </div>
@@ -1649,7 +1643,7 @@
         </div>
 
         <!-- ---------------------------------------------------------
-             TAB 3: QUYẾT ĐỊNH & THỰC THI (EXECUTE)
+             TAB 3: QUYẾT ĐỊNH & KHUYẾN NGHỊ (ADVISORY)
              --------------------------------------------------------- -->
         <div class="tab-pane" id="tab-execute">
             <div class="execute-container">
@@ -1694,27 +1688,27 @@
                         </div>
                     </div>
 
-                    <!-- Allocation Matrix Row -->
+                    <!-- Advisory Parameters Row -->
                     <div class="order-matrix" style="margin-top: -10px;">
                         <div class="matrix-cell">
-                            <span class="matrix-cell-label">Cấp Vốn Danh Mục</span>
-                            <span class="matrix-cell-val text-green" id="exec-alloc-pct">8.78%</span>
-                            <span class="matrix-cell-sub" id="exec-alloc-usd">$877.98 USD</span>
+                            <span class="matrix-cell-label">Tỷ Trọng Khuyến Nghị</span>
+                            <span class="matrix-cell-val text-green" id="exec-alloc-pct">8.0%</span>
+                            <span class="matrix-cell-sub">Theo biến động ATR & Kelly</span>
                         </div>
                         <div class="matrix-cell">
-                            <span class="matrix-cell-label">Khối Lượng Mua Dự Kiến</span>
-                            <span class="matrix-cell-val" id="exec-qty">0.0101 BTC</span>
-                            <span class="matrix-cell-sub">Phí ước tính: ~$0.44</span>
+                            <span class="matrix-cell-label">Độ Biến Động Thị Trường</span>
+                            <span class="matrix-cell-val" id="exec-volatility">Bình Thường</span>
+                            <span class="matrix-cell-sub">Biên độ dao động kiểm soát</span>
                         </div>
                         <div class="matrix-cell">
-                            <span class="matrix-cell-label">Daily Drawdown</span>
-                            <span class="matrix-cell-val text-green" id="exec-dd">0.0%</span>
-                            <span class="matrix-cell-sub">Giới hạn bảo vệ: 4.0%</span>
+                            <span class="matrix-cell-label">Độ Lệch Ý Kiến (Divergence)</span>
+                            <span class="matrix-cell-val text-amber" id="exec-divergence">0.12</span>
+                            <span class="matrix-cell-sub">Mức độ đồng thuận hội đồng</span>
                         </div>
                         <div class="matrix-cell">
-                            <span class="matrix-cell-label">Circuit Breaker</span>
-                            <span class="matrix-cell-val text-green" id="exec-cb">AN TOÀN</span>
-                            <span class="matrix-cell-sub">Bộ ngắt mạch bình thường</span>
+                            <span class="matrix-cell-label">Trạng Thái Rủi Ro</span>
+                            <span class="matrix-cell-val text-green" id="exec-risk-status">ĐẠT CHUẨN</span>
+                            <span class="matrix-cell-sub">Qua bộ lọc Hard Guardrail</span>
                         </div>
                     </div>
 
@@ -1722,16 +1716,36 @@
                     <div class="guardrail-alert" id="exec-guardrail-alert">
                         <span style="font-size: 18px;">🛡️</span>
                         <div>
-                            <b>Quản trị rủi ro cứng (Non-LLM Guardrail) đã thẩm định:</b>
+                            <b>Thẩm định rủi ro kỹ thuật (Non-LLM Guardrail):</b>
                             <div id="exec-guardrail-msg" style="margin-top: 3px;">
-                                Lệnh BUY đã được phê duyệt. Take-profit được điều chỉnh tự động lên $116,064.15 nhằm đảm bảo tỷ lệ Risk:Reward tối thiểu 1.5.
+                                Tín hiệu hợp lệ. SL/TP thỏa mãn tỷ lệ Risk:Reward tối thiểu 1.5 và biên độ cắt lỗ an toàn.
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Bull Case & Bear Case Comparison -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-top: 20px;">
+                        <div style="background: rgba(16, 185, 129, 0.06); border: 1px solid rgba(16, 185, 129, 0.2); border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--accent-green); margin-bottom: 8px;">
+                                <span>🐂 Luận Điểm Tăng Giá (Bull Case)</span>
+                            </div>
+                            <div id="exec-bull-case" style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+                                Đang cập nhật...
+                            </div>
+                        </div>
+                        <div style="background: rgba(239, 68, 68, 0.06); border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 12px; padding: 16px;">
+                            <div style="display: flex; align-items: center; gap: 6px; font-size: 12.5px; font-weight: 700; color: var(--accent-red); margin-bottom: 8px;">
+                                <span>🐻 Rủi Ro & Thận Trọng (Bear Case)</span>
+                            </div>
+                            <div id="exec-bear-case" style="font-size: 12.5px; color: var(--text-secondary); line-height: 1.5;">
+                                Đang cập nhật...
                             </div>
                         </div>
                     </div>
 
                     <!-- Rationale Box -->
                     <div style="margin-top: 20px;">
-                        <span style="font-size: 11.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block;">Luận Điểm Giao Dịch Của Chief Trader</span>
+                        <span style="font-size: 11.5px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; margin-bottom: 6px; display: block;">Báo Cáo Tổng Hợp Của Chief Trader (CIO)</span>
                         <div class="rationale-quote" id="exec-rationale">
                             "Tổng hợp phân tích kỹ thuật và dòng tiền ủng hộ kịch bản tăng. Luận điểm Bull có cơ sở xác thực với hỗ trợ dòng tiền và cấu trúc giá tiếp diễn."
                         </div>
@@ -1739,11 +1753,11 @@
 
                     <!-- Actions -->
                     <div class="execute-actions-bar">
-                        <button class="btn-execute-now" onclick="executePaperTrade()">
-                            <span>🚀 Khớp Lệnh Paper Trade ($877.98)</span>
+                        <button class="btn-execute-now" onclick="copyRecommendation()">
+                            <span>📋 Sao Chép Khuyến Nghị Giao Dịch</span>
                         </button>
-                        <button class="tab-btn" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 16px 24px;" onclick="switchTab('tab-analyze')">
-                            <span>← Xem Lại Phân Tích</span>
+                        <button class="tab-btn" style="background: var(--bg-surface); border: 1px solid var(--border); padding: 16px 24px;" onclick="switchTab('tab-history')">
+                            <span>📜 Xem Lịch Sử Tư Vấn →</span>
                         </button>
                     </div>
                 </div>
@@ -1752,71 +1766,43 @@
         </div>
 
         <!-- ---------------------------------------------------------
-             TAB 4: DANH MỤC (PORTFOLIO)
+             TAB 4: LỊCH SỬ TƯ VẤN (ADVISORY HISTORY)
              --------------------------------------------------------- -->
-        <div class="tab-pane" id="tab-portfolio">
+        <div class="tab-pane" id="tab-history">
             
-            <!-- Portfolio Overview 4 Cards -->
+            <!-- Advisory Overview 4 Cards -->
             <div class="portfolio-stats-grid">
                 <div class="stat-card-modern">
-                    <span class="stat-card-title">Tổng Tài Sản (Equity)</span>
-                    <span class="stat-card-num text-green" id="pf-equity">$10,000.00</span>
-                    <span class="stat-card-sub" id="pf-cash">Tiền mặt: $10,000.00 USD</span>
+                    <span class="stat-card-title">Tổng Số Lượt Tư Vấn</span>
+                    <span class="stat-card-num text-green" id="hist-total-count">0</span>
+                    <span class="stat-card-sub">Lịch sử thẩm định của hội đồng</span>
                 </div>
                 <div class="stat-card-modern">
-                    <span class="stat-card-title">Lợi Nhuận Đã Chốt</span>
-                    <span class="stat-card-num" id="pf-realized">$0.00</span>
-                    <span class="stat-card-sub">Tổng số lệnh đóng: <b id="pf-closed-count">0</b></span>
+                    <span class="stat-card-title">Tín Hiệu Mua / Bán / Giữ</span>
+                    <span class="stat-card-num text-blue" id="hist-action-ratio">0 / 0 / 0</span>
+                    <span class="stat-card-sub">Phân bổ khuyến nghị</span>
                 </div>
                 <div class="stat-card-modern">
-                    <span class="stat-card-title">Tỷ Lệ Thắng (Win Rate)</span>
-                    <span class="stat-card-num text-amber" id="pf-winrate">0.0%</span>
-                    <span class="stat-card-sub">Dựa trên các lệnh đã hoàn tất</span>
+                    <span class="stat-card-title">Điểm Tin Cậy Bình Quân</span>
+                    <span class="stat-card-num text-amber" id="hist-avg-conviction">0.0 / 10</span>
+                    <span class="stat-card-sub">Mức độ tự tin trung bình</span>
                 </div>
                 <div class="stat-card-modern">
-                    <span class="stat-card-title">Drawdown Lớn Nhất</span>
-                    <span class="stat-card-num text-blue" id="pf-maxdd">0.0%</span>
-                    <span class="stat-card-sub" id="pf-dailydd">Daily Drawdown: 0.0%</span>
+                    <span class="stat-card-title">Tỷ Lệ Đồng Thuận Cao</span>
+                    <span class="stat-card-num text-purple" id="hist-consensus-rate">0%</span>
+                    <span class="stat-card-sub">Số phiên không cần tranh luận</span>
                 </div>
             </div>
 
-            <!-- Active Positions -->
+            <!-- Advisory Decision Cycles Table -->
             <div class="section-header">
                 <div class="section-title">
-                    <span>📌 Vị Thế Đang Mở (Active Positions)</span>
+                    <span>📜 Danh Sách Khuyến Nghị & Quyết Định Của Hội Đồng</span>
                 </div>
-            </div>
-
-            <div class="positions-card">
-                <table class="screener-table">
-                    <thead>
-                        <tr>
-                            <th>Cặp Coin</th>
-                            <th>Vị Thế</th>
-                            <th style="text-align: right;">Khối Lượng</th>
-                            <th style="text-align: right;">Giá Vào (Entry)</th>
-                            <th style="text-align: right;">Giá Hiện Tại</th>
-                            <th style="text-align: right;">Lãi/Lỗ Chưa Chốt (PnL)</th>
-                            <th style="text-align: right;">Stop Loss</th>
-                            <th style="text-align: right;">Take Profit</th>
-                            <th style="text-align: center;">Thao Tác</th>
-                        </tr>
-                    </thead>
-                    <tbody id="positions-tbody">
-                        <tr>
-                            <td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">
-                                Chưa có vị thế mở nào. Hãy chọn coin và bấm Phân Tích Đa Agent để mở lệnh.
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
-
-            <!-- Closed Trades History -->
-            <div class="section-header">
-                <div class="section-title">
-                    <span>📜 Lịch Sử Giao Dịch Đã Đóng</span>
-                </div>
+                <button class="tab-btn" style="background: var(--bg-card); border: 1px solid var(--border);" onclick="fetchHistory()">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"></path></svg>
+                    <span>Làm Mới Lịch Sử</span>
+                </button>
             </div>
 
             <div class="positions-card">
@@ -1825,19 +1811,20 @@
                         <tr>
                             <th>Thời Gian</th>
                             <th>Cặp Coin</th>
-                            <th>Vị Thế</th>
-                            <th style="text-align: right;">Giá Mua</th>
-                            <th style="text-align: right;">Giá Bán</th>
-                            <th style="text-align: right;">Khối Lượng</th>
-                            <th style="text-align: right;">PnL ($)</th>
-                            <th style="text-align: right;">PnL (%)</th>
-                            <th>Lý Do Đóng</th>
+                            <th>Khuyến Nghị</th>
+                            <th style="text-align: center;">Độ Tin Cậy</th>
+                            <th style="text-align: right;">Giá Lúc Phân Tích</th>
+                            <th style="text-align: right;">Cắt Lỗ (SL)</th>
+                            <th style="text-align: right;">Chốt Lời (TP)</th>
+                            <th style="text-align: center;">Tỷ Lệ R:R</th>
+                            <th style="text-align: center;">Tỷ Trọng</th>
+                            <th>Luận Điểm Tổng Hợp</th>
                         </tr>
                     </thead>
                     <tbody id="history-tbody">
                         <tr>
-                            <td colspan="9" style="text-align: center; padding: 24px; color: var(--text-muted);">
-                                Chưa có giao dịch nào được hoàn tất.
+                            <td colspan="10" style="text-align: center; padding: 28px; color: var(--text-muted);">
+                                Chưa có dữ liệu lịch sử tư vấn nào. Hãy nhấn "Chạy Phân Tích" để bắt đầu chu trình đầu tiên.
                             </td>
                         </tr>
                     </tbody>
@@ -1958,8 +1945,6 @@
                         document.getElementById('btn-global-run').disabled = false;
                         updateAllViewsWithCycleData(data);
                         showToast(`Hoàn tất phân tích đa agent cho ${data.symbol}!`);
-                    } else if (data.type === "PORTFOLIO_UPDATE") {
-                        updatePortfolioView(data.portfolio);
                     }
                 } catch (e) {
                     console.error("WS error:", e);
@@ -2394,7 +2379,7 @@
                 debateBox.innerHTML = `✓ Các Analyst đồng thuận cao về triển vọng thị trường. Bỏ qua vòng tranh luận Bull/Bear để tối ưu tốc độ ra quyết định.`;
             }
 
-            // 4. Update Tab 3 (Execute View)
+            // 4. Update Tab 3 (Execute / Recommendation View)
             if (dec) {
                 const act = dec.action;
                 document.getElementById('exec-action-text').innerText = `${act} (${act === 'BUY' ? 'MUA' : (act === 'SELL' ? 'BÁN' : 'GIỮ')})`;
@@ -2432,20 +2417,46 @@
 
                 if (risk) {
                     document.getElementById('exec-alloc-pct').innerText = `${risk.approved_position_size_pct || 8.0}%`;
-                    document.getElementById('exec-alloc-usd').innerText = `$${(risk.approved_position_usd || 800).toLocaleString()} USD`;
+                    const isApproved = risk.approved !== false;
+                    document.getElementById('exec-risk-status').innerText = isApproved ? 'ĐẠT CHUẨN' : 'CẢNH BÁO';
+                    document.getElementById('exec-risk-status').className = `matrix-cell-val ${isApproved ? 'text-green' : 'text-red'}`;
 
                     if (risk.guardrail_notes && risk.guardrail_notes.length > 0) {
                         document.getElementById('exec-guardrail-msg').innerText = risk.guardrail_notes.join('; ');
                     }
                 }
 
+                document.getElementById('exec-divergence').innerText = divScore.toFixed(2);
+                document.getElementById('exec-volatility').innerText = (snap?.indicators?.atr ? `$${snap.indicators.atr.toFixed(2)}` : 'Bình Thường');
+
+                // Extract Bull Case and Bear Case from debate turns or analysts
+                let bullArg = '';
+                let bearArg = '';
+
+                if (data.debate_turns && data.debate_turns.length > 0) {
+                    const bullTurns = data.debate_turns.filter(d => d.speaker && d.speaker.includes('Bull'));
+                    const bearTurns = data.debate_turns.filter(d => d.speaker && d.speaker.includes('Bear'));
+                    if (bullTurns.length > 0) bullArg = bullTurns[bullTurns.length - 1].argument;
+                    if (bearTurns.length > 0) bearArg = bearTurns[bearTurns.length - 1].argument;
+                }
+
+                if (!bullArg && data.analysts) {
+                    const bulls = data.analysts.filter(a => a.belief && a.belief.bias === 'BULLISH');
+                    if (bulls.length > 0) bullArg = `${bulls[0].analyst_type}: ${bulls[0].summary || ''}`;
+                }
+                if (!bearArg && data.analysts) {
+                    const bears = data.analysts.filter(a => a.belief && (a.belief.bias === 'BEARISH' || a.belief.bias === 'NEUTRAL'));
+                    if (bears.length > 0) bearArg = `${bears[0].analyst_type}: ${bears[0].summary || ''}`;
+                }
+
+                document.getElementById('exec-bull-case').innerText = bullArg || 'Xu hướng tăng được củng cố bởi cấu trúc kỹ thuật và sự cải thiện của dòng tiền tổ chức.';
+                document.getElementById('exec-bear-case').innerText = bearArg || 'Cần chú ý ngưỡng kháng cự trên và rủi ro giật biến động tại các khung thời gian ngắn.';
+
                 document.getElementById('exec-rationale').innerText = `"${dec.rationale || 'Luận điểm thị trường được củng cố bởi sự đồng thuận giữa các chỉ báo kỹ thuật và thanh khoản dòng tiền.'}"`;
             }
 
-            // 5. Update Portfolio in Tab 4
-            if (pf) {
-                updatePortfolioView(pf);
-            }
+            // 5. Refresh Advisory History in Tab 4
+            fetchHistory();
 
             // Redraw overlay lines on chart
             renderCandleChart();
@@ -2465,103 +2476,128 @@
         }
 
         // -------------------------------------------------------------
-        // PORTFOLIO VIEW UPDATER
+        // RECOMMENDATION COPY UTILITY
         // -------------------------------------------------------------
-        function updatePortfolioView(pf) {
-            if (!pf) return;
-            document.getElementById('header-equity').innerText = `$${pf.total_equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('pf-equity').innerText = `$${pf.total_equity.toLocaleString('en-US', {minimumFractionDigits: 2})}`;
-            document.getElementById('pf-cash').innerText = `Tiền mặt: $${pf.cash_balance.toLocaleString('en-US', {minimumFractionDigits: 2})} USD`;
-            document.getElementById('pf-realized').innerText = `$${(pf.total_realized_pnl || 0.0).toFixed(2)}`;
-            document.getElementById('pf-realized').className = `stat-card-num ${(pf.total_realized_pnl || 0) >= 0 ? 'text-green' : 'text-red'}`;
-            document.getElementById('pf-winrate').innerText = `${pf.win_rate_pct || 0}%`;
-            document.getElementById('pf-maxdd').innerText = `${pf.max_drawdown_pct || 0}%`;
-            document.getElementById('pf-dailydd').innerText = `Daily Drawdown: ${pf.daily_drawdown_pct || 0}%`;
-            document.getElementById('pf-closed-count').innerText = pf.closed_trades_count || 0;
+        function copyRecommendation() {
+            if (!lastCycleData || !lastCycleData.raw_decision) {
+                showToast("Chưa có dữ liệu khuyến nghị để sao chép!", false);
+                return;
+            }
+            const dec = lastCycleData.raw_decision;
+            const snap = lastCycleData.snapshot;
+            const risk = lastCycleData.risk_validation;
+            const sym = lastCycleData.symbol || currentSymbol;
+            const entry = snap ? snap.current_price : 0;
+            const sl = risk?.approved_stop_loss || dec.stop_loss;
+            const tp = risk?.approved_take_profit || dec.take_profit;
+            const alloc = risk?.approved_position_size_pct || 8.0;
 
-            const posCount = (pf.open_positions || []).length;
-            document.getElementById('tab-pos-count').innerText = posCount;
+            const text = `📢 KHUYẾN NGHỊ TƯ VẤN GIAO DỊCH - TAURIC AI
+------------------------------------------
+• Cặp giao dịch: ${sym}
+• Khuyến nghị: ${dec.action} (${dec.action === 'BUY' ? 'MUA' : (dec.action === 'SELL' ? 'BÁN' : 'GIỮ')})
+• Độ tin cậy (Conviction): ${dec.conviction || 7}/10
+• Giá Entry khuyến nghị: $${entry.toLocaleString()}
+• Cắt lỗ (Stop Loss): $${sl ? sl.toLocaleString() : 'N/A'}
+• Chốt lời (Take Profit): $${tp ? tp.toLocaleString() : 'N/A'}
+• Tỷ trọng danh mục gợi ý: ${alloc}%
+• Luận điểm Chief Trader: ${dec.rationale || ''}
+• Thời gian thẩm định: ${new Date().toLocaleString('vi-VN')}
+------------------------------------------`;
 
-            // Render open positions table
-            const posTbody = document.getElementById('positions-tbody');
-            if (pf.open_positions && pf.open_positions.length > 0) {
-                posTbody.innerHTML = pf.open_positions.map(p => {
-                    const isWin = (p.unrealized_pnl || 0) >= 0;
-                    return `
-                        <tr>
-                            <td style="font-weight: 700; color: #38bdf8; font-family: var(--font-mono);">${p.symbol}</td>
-                            <td><span class="badge-pill badge-bull">${p.side}</span></td>
-                            <td style="text-align: right; font-family: var(--font-mono);">${p.amount}</td>
-                            <td style="text-align: right; font-family: var(--font-mono);">$${p.entry_price.toLocaleString()}</td>
-                            <td style="text-align: right; font-family: var(--font-mono);">$${p.current_price.toLocaleString()}</td>
-                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
-                                ${isWin ? '+' : ''}$${(p.unrealized_pnl || 0).toFixed(2)} (${isWin ? '+' : ''}${(p.unrealized_pnl_pct || 0).toFixed(2)}%)
-                            </td>
-                            <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-red);">$${(p.stop_loss || 0).toLocaleString()}</td>
-                            <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-green);">$${(p.take_profit || 0).toLocaleString()}</td>
-                            <td style="text-align: center;">
-                                <button class="btn-close-pos" onclick="closePosition('${p.symbol}')">Đóng Vị Thế</button>
-                            </td>
-                        </tr>
-                    `;
-                }).join('');
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(text).then(() => {
+                    showToast("Đã sao chép khuyến nghị vào clipboard!");
+                }).catch(err => {
+                    prompt("Sao chép khuyến nghị bên dưới:", text);
+                });
             } else {
-                posTbody.innerHTML = `<tr><td colspan="9" style="text-align:center;padding:24px;color:var(--text-muted);">Chưa có vị thế mở nào.</td></tr>`;
-            }
-
-            // Render closed history table
-            const histTbody = document.getElementById('history-tbody');
-            if (pf.closed_trades && pf.closed_trades.length > 0) {
-                histTbody.innerHTML = pf.closed_trades.map(t => {
-                    const isWin = (t.realized_pnl || 0) >= 0;
-                    const dateStr = t.closed_at ? new Date(t.closed_at).toLocaleTimeString() : '--';
-                    return `
-                        <tr>
-                            <td style="color: var(--text-muted); font-family: var(--font-mono); font-size: 11.5px;">${dateStr}</td>
-                            <td style="font-weight: 700; font-family: var(--font-mono);">${t.symbol}</td>
-                            <td><span class="badge-pill badge-neutral">${t.side}</span></td>
-                            <td style="text-align: right; font-family: var(--font-mono);">$${t.entry_price.toLocaleString()}</td>
-                            <td style="text-align: right; font-family: var(--font-mono);">$${t.exit_price.toLocaleString()}</td>
-                            <td style="text-align: right; font-family: var(--font-mono);">${t.amount}</td>
-                            <td style="text-align: right; font-family: var(--font-mono); font-weight: 700; color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
-                                ${isWin ? '+' : ''}$${t.realized_pnl.toFixed(2)}
-                            </td>
-                            <td style="text-align: right; font-family: var(--font-mono); color: ${isWin ? 'var(--accent-green)' : 'var(--accent-red)'};">
-                                ${isWin ? '+' : ''}${t.realized_pnl_pct.toFixed(2)}%
-                            </td>
-                            <td><span class="badge-pill badge-neutral">${t.reason || 'MANUAL'}</span></td>
-                        </tr>
-                    `;
-                }).join('');
+                prompt("Sao chép khuyến nghị bên dưới:", text);
             }
         }
 
-        async function closePosition(symbol) {
-            if (!confirm(`Bạn có chắc chắn muốn đóng vị thế ${symbol} ngay bây giờ không?`)) return;
+        // -------------------------------------------------------------
+        // ADVISORY HISTORY LOADER & RENDERER
+        // -------------------------------------------------------------
+        async function fetchHistory() {
             try {
-                const res = await fetch(`/api/close-position?symbol=${encodeURIComponent(symbol)}`, { method: 'POST' });
-                const json = await res.json();
-                showToast(`Đã đóng vị thế ${symbol}. PnL: $${json.realized_pnl || 0}`);
-                fetchPortfolio();
-            } catch (err) {
-                showToast(`Lỗi đóng vị thế: ${err.message}`, false);
-            }
-        }
-
-        async function executePaperTrade() {
-            showToast("Lệnh đã được hệ thống khớp vào tài khoản Paper Trade!");
-            switchTab('tab-portfolio');
-            fetchPortfolio();
-        }
-
-        async function fetchPortfolio() {
-            try {
-                const res = await fetch('/api/portfolio');
-                const pf = await res.json();
-                updatePortfolioView(pf);
+                const res = await fetch('/api/history?limit=25');
+                if (!res.ok) return;
+                const cycles = await res.json();
+                renderHistoryView(cycles);
             } catch (e) {
-                console.warn("Portfolio fetch error:", e);
+                console.warn("History fetch error:", e);
             }
+        }
+
+        function renderHistoryView(cycles) {
+            if (!cycles) return;
+            const count = cycles.length;
+            const badge = document.getElementById('tab-history-badge');
+            if (badge) badge.innerText = count;
+            
+            const totalEl = document.getElementById('hist-total-count');
+            if (totalEl) totalEl.innerText = count;
+
+            const tbody = document.getElementById('history-tbody');
+            if (!tbody) return;
+
+            if (count === 0) {
+                tbody.innerHTML = `<tr><td colspan="10" style="text-align: center; padding: 28px; color: var(--text-muted);">Chưa có dữ liệu lịch sử tư vấn nào.</td></tr>`;
+                return;
+            }
+
+            let buyCount = 0, sellCount = 0, holdCount = 0;
+            let totalConv = 0;
+            let highConsensusCount = 0;
+
+            tbody.innerHTML = cycles.map(c => {
+                const act = c.approved_action || c.action || 'HOLD';
+                if (act === 'BUY') buyCount++;
+                else if (act === 'SELL') sellCount++;
+                else holdCount++;
+
+                totalConv += (c.conviction || 0);
+                if (!c.needs_debate) highConsensusCount++;
+
+                const dateStr = c.created_at ? new Date(c.created_at).toLocaleTimeString('vi-VN', { hour: '2-digit', minute: '2-digit' }) : '--';
+                const entry = c.current_price || 0;
+                const sl = c.stop_loss || 0;
+                const tp = c.take_profit || 0;
+                let rrStr = '--';
+                if (sl && tp && sl !== entry) {
+                    const rr = Math.abs((tp - entry) / (entry - sl));
+                    rrStr = `${rr.toFixed(2)} : 1`;
+                }
+
+                const badgeClass = act === 'BUY' ? 'badge-bull' : (act === 'SELL' ? 'badge-bear' : 'badge-neutral');
+
+                return `
+                    <tr>
+                        <td style="color: var(--text-muted); font-family: var(--font-mono); font-size: 11.5px; white-space: nowrap;">${dateStr}</td>
+                        <td style="font-weight: 700; color: #38bdf8; font-family: var(--font-mono);">${c.symbol}</td>
+                        <td><span class="badge-pill ${badgeClass}">${act}</span></td>
+                        <td style="text-align: center; font-weight: 700;">${c.conviction || 0}/10</td>
+                        <td style="text-align: right; font-family: var(--font-mono);">$${entry.toLocaleString()}</td>
+                        <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-red);">$${sl.toLocaleString()}</td>
+                        <td style="text-align: right; font-family: var(--font-mono); color: var(--accent-green);">$${tp.toLocaleString()}</td>
+                        <td style="text-align: center; font-family: var(--font-mono); color: #38bdf8;">${rrStr}</td>
+                        <td style="text-align: center; font-weight: 600;">${c.position_size_pct || 0}%</td>
+                        <td style="max-width: 280px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text-secondary); font-size: 12px;" title="${(c.rationale || '').replace(/"/g, '&quot;')}">
+                            ${c.rationale || 'N/A'}
+                        </td>
+                    </tr>
+                `;
+            }).join('');
+
+            const ratioEl = document.getElementById('hist-action-ratio');
+            if (ratioEl) ratioEl.innerText = `${buyCount} / ${sellCount} / ${holdCount}`;
+            
+            const avgConvEl = document.getElementById('hist-avg-conviction');
+            if (avgConvEl) avgConvEl.innerText = `${(totalConv / count).toFixed(1)} / 10`;
+
+            const consensusEl = document.getElementById('hist-consensus-rate');
+            if (consensusEl) consensusEl.innerText = `${Math.round((highConsensusCount / count) * 100)}%`;
         }
 
         // -------------------------------------------------------------
@@ -2571,11 +2607,10 @@
             initWebSocket();
             loadMarketScreener();
             fetchAndRenderCandles(currentSymbol, currentTimeframe);
-            fetchPortfolio();
+            fetchHistory();
 
             fetch('/api/status').then(r => r.json()).then(st => {
                 if (st.model_reasoning) document.getElementById('header-model').innerText = st.model_reasoning;
-                if (st.portfolio) updatePortfolioView(st.portfolio);
             }).catch(e => console.warn(e));
 
             // Resize listener for responsive chart
