@@ -1265,8 +1265,393 @@
             gap: 10px;
         }
 
-        #toast-box.show {
-            transform: translateX(0);
+        /* -------------------------------------------------------------
+           API SETTINGS MODAL & WARNING BANNER
+           ------------------------------------------------------------- */
+        .cursor-pointer { cursor: pointer; }
+        .text-xs { font-size: 11px; }
+        .font-bold { font-weight: 700; }
+        .text-underline { text-decoration: underline; }
+        .flex-1 { flex: 1; }
+
+        .btn-settings-header {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(59, 130, 246, 0.15);
+            border: 1px solid rgba(59, 130, 246, 0.35);
+            color: #60a5fa;
+            padding: 6px 13px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-settings-header:hover {
+            background: rgba(59, 130, 246, 0.28);
+            border-color: #60a5fa;
+            color: #ffffff;
+            transform: translateY(-1px);
+        }
+
+        .mock-warning-banner {
+            background: linear-gradient(90deg, rgba(245, 158, 11, 0.18), rgba(239, 68, 68, 0.12));
+            border-bottom: 1px solid rgba(245, 158, 11, 0.35);
+            padding: 9px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 12.5px;
+            color: #fde68a;
+            position: sticky;
+            top: 55px;
+            z-index: 90;
+            backdrop-filter: blur(10px);
+        }
+        .banner-content {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .banner-icon { font-size: 16px; }
+        .banner-link {
+            color: #93c5fd;
+            font-weight: 700;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .banner-link:hover { color: #ffffff; }
+        .banner-btn {
+            background: var(--accent-amber);
+            color: #1e1b4b;
+            border: none;
+            padding: 4px 12px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 11.5px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .banner-btn:hover { opacity: 0.9; }
+
+        /* Modal Styles */
+        .modal-backdrop {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(4, 7, 13, 0.82);
+            backdrop-filter: blur(8px);
+            z-index: 1000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            animation: fadeIn 0.2s ease-out;
+        }
+
+        .modal-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-xl);
+            width: 100%;
+            max-width: 620px;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.65), 0 0 30px rgba(59, 130, 246, 0.15);
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            animation: modalPop 0.25s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes modalPop {
+            from { transform: scale(0.95); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .modal-header {
+            padding: 20px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            background: rgba(255, 255, 255, 0.02);
+        }
+        .modal-title-group {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .modal-icon { font-size: 24px; }
+        .modal-title {
+            font-size: 17px;
+            font-weight: 800;
+            color: var(--text-primary);
+        }
+        .modal-subtitle {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+        .modal-close-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 18px;
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: var(--radius-sm);
+            transition: all 0.2s;
+        }
+        .modal-close-btn:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .modal-body {
+            padding: 24px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            max-height: 75vh;
+            overflow-y: auto;
+        }
+
+        .settings-status-box {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            padding: 10px 16px;
+            border-radius: var(--radius-md);
+            font-size: 13px;
+            font-weight: 600;
+        }
+
+        .settings-section {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-lg);
+            padding: 18px;
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+
+        .section-title-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .provider-badge {
+            font-size: 12px;
+            font-weight: 800;
+            padding: 3px 10px;
+            border-radius: var(--radius-sm);
+            letter-spacing: 0.3px;
+        }
+        .google-badge {
+            background: linear-gradient(135deg, #1e3a8a, #4338ca);
+            color: #93c5fd;
+            border: 1px solid rgba(147, 197, 253, 0.3);
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+        .form-label {
+            font-size: 12.5px;
+            font-weight: 700;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        .label-hint {
+            font-size: 11px;
+            font-weight: normal;
+            color: var(--text-muted);
+        }
+
+        .input-with-button {
+            display: flex;
+            position: relative;
+        }
+        .form-input {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 10px 14px;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+            font-size: 13px;
+            outline: none;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+        .form-input:focus {
+            border-color: var(--accent-blue);
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+        }
+        .input-with-button .form-input {
+            padding-right: 44px;
+        }
+        .btn-toggle-eye {
+            position: absolute;
+            right: 8px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 4px 6px;
+            border-radius: var(--radius-sm);
+            font-size: 14px;
+        }
+        .btn-toggle-eye:hover { color: var(--text-primary); }
+
+        .help-row {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            margin-top: 2px;
+        }
+
+        .form-row {
+            display: flex;
+            gap: 14px;
+        }
+        .form-select {
+            width: 100%;
+            background: var(--bg-surface);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-sm);
+            padding: 9px 12px;
+            color: var(--text-primary);
+            font-size: 12.5px;
+            outline: none;
+            cursor: pointer;
+        }
+        .form-select:focus {
+            border-color: var(--accent-blue);
+        }
+
+        .test-row {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-top: 4px;
+        }
+        .btn-secondary {
+            align-self: flex-start;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--border-light);
+            color: var(--text-primary);
+            padding: 7px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.12);
+            border-color: var(--accent-blue);
+        }
+        .test-key-result {
+            padding: 10px 14px;
+            border-radius: var(--radius-sm);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+        .test-key-success {
+            background: rgba(16, 185, 129, 0.12);
+            border: 1px solid rgba(16, 185, 129, 0.35);
+            color: #6ee7b7;
+        }
+        .test-key-error {
+            background: rgba(239, 68, 68, 0.12);
+            border: 1px solid rgba(239, 68, 68, 0.35);
+            color: #fca5a5;
+        }
+
+        .secondary-providers-details {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--border);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+        .secondary-providers-summary {
+            padding: 12px 16px;
+            font-size: 12.5px;
+            font-weight: 600;
+            color: var(--text-muted);
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            user-select: none;
+        }
+        .secondary-providers-summary:hover { color: var(--text-primary); }
+        .summary-arrow { font-size: 10px; transition: transform 0.2s; }
+        details[open] .summary-arrow { transform: rotate(180deg); }
+        .secondary-providers-content {
+            padding: 14px 16px 18px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .modal-footer {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            justify-content: flex-end;
+            gap: 12px;
+            background: rgba(255, 255, 255, 0.01);
+        }
+        .btn-cancel {
+            background: transparent;
+            border: 1px solid var(--border);
+            color: var(--text-secondary);
+            padding: 9px 18px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-cancel:hover {
+            color: var(--text-primary);
+            background: rgba(255, 255, 255, 0.04);
+        }
+        .btn-save {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: white;
+            border: none;
+            padding: 9px 22px;
+            border-radius: var(--radius-sm);
+            font-weight: 700;
+            font-size: 13px;
+            cursor: pointer;
+            transition: all 0.2s;
+            box-shadow: 0 4px 14px rgba(16, 185, 129, 0.35);
+        }
+        .btn-save:hover {
+            opacity: 0.93;
+            transform: translateY(-1px);
+        }
+        .btn-save:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
         }
     </style>
 </head>
@@ -1306,12 +1691,18 @@
         </div>
 
         <div class="header-right">
-            <!-- System Status -->
-            <div class="info-pill">
-                <span class="pulse-indicator"></span>
-                <span class="info-pill-label">LLM:</span>
-                <span class="info-pill-val text-purple" id="header-model">Gemini 3.8</span>
+            <!-- AI Mode Status Pill -->
+            <div class="info-pill cursor-pointer" id="header-ai-pill" onclick="openSettingsModal()" title="Bấm để cấu hình API Key">
+                <span class="pulse-indicator" id="header-ai-dot" style="background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber);"></span>
+                <span class="info-pill-label">AI:</span>
+                <span class="info-pill-val text-amber" id="header-ai-val">MOCK LLM</span>
             </div>
+
+            <!-- Settings Button -->
+            <button class="btn-settings-header" id="btn-settings" onclick="openSettingsModal()" title="Cài đặt API Key & Mô hình AI">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                <span>Cài Đặt API</span>
+            </button>
 
             <!-- Live Active Price -->
             <div class="info-pill">
@@ -1327,6 +1718,15 @@
             </button>
         </div>
     </header>
+
+    <!-- Mock Mode Warning Banner -->
+    <div id="mock-warning-banner" class="mock-warning-banner" style="display: none;">
+        <div class="banner-content">
+            <span class="banner-icon">⚡</span>
+            <span><strong>Chế độ Giả lập (Mock LLM) đang bật:</strong> Hệ thống chưa có API Key nên các lập luận đa agent đang dùng mô phỏng. <a href="javascript:void(0)" onclick="openSettingsModal()" class="banner-link">Nhập Gemini API Key miễn phí ngay ↗</a> để kích hoạt AI thực tế!</span>
+        </div>
+        <button class="banner-btn" onclick="openSettingsModal()">⚙️ Nhập Key</button>
+    </div>
 
     <!-- =============================================================
          MAIN TABS CONTAINER
@@ -1855,6 +2255,112 @@
         </div>
     </div>
 
+    <!-- =============================================================
+         SETTINGS & API KEYS MODAL
+         ============================================================= -->
+    <div id="settings-modal" class="modal-backdrop" style="display: none;" onclick="handleModalBackdropClick(event)">
+        <div class="modal-card">
+            <div class="modal-header">
+                <div class="modal-title-group">
+                    <span class="modal-icon">⚙️</span>
+                    <div>
+                        <h3 class="modal-title">Cài Đặt API Keys & Mô Hình AI</h3>
+                        <p class="modal-subtitle">Cấu hình kết nối Google Gemini (hoặc OpenAI/DeepSeek) để kích hoạt AI Agents thực tế</p>
+                    </div>
+                </div>
+                <button class="modal-close-btn" onclick="closeSettingsModal()">✕</button>
+            </div>
+
+            <div class="modal-body">
+                <!-- Status Box -->
+                <div class="settings-status-box" id="settings-current-status-box">
+                    <span class="pulse-indicator" id="modal-status-dot" style="background: var(--accent-amber); box-shadow: 0 0 8px var(--accent-amber);"></span>
+                    <span id="modal-status-text">Đang kiểm tra trạng thái hệ thống...</span>
+                </div>
+
+                <!-- Google Gemini Provider (Primary & Recommended) -->
+                <div class="settings-section">
+                    <div class="section-title-row">
+                        <span class="provider-badge google-badge">Google Gemini</span>
+                        <span class="text-green text-xs font-bold">★ KHUYÊN DÙNG (Miễn phí 100%)</span>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="input-gemini-key">
+                            Gemini API Key
+                            <span class="label-hint">(Bắt đầu bằng AIzaSy...)</span>
+                        </label>
+                        <div class="input-with-button">
+                            <input type="password" id="input-gemini-key" class="form-input" placeholder="Dán Gemini API Key của bạn vào đây..." autocomplete="off">
+                            <button type="button" class="btn-toggle-eye" onclick="togglePasswordVisibility('input-gemini-key', this)">👁️</button>
+                        </div>
+                        <div class="help-row">
+                            <span class="text-muted text-xs">Chưa có key?</span>
+                            <a href="https://aistudio.google.com/app/apikey" target="_blank" rel="noopener" class="text-blue text-xs text-underline">
+                                Lấy Gemini API Key miễn phí tại Google AI Studio ↗
+                            </a>
+                        </div>
+                    </div>
+
+                    <!-- Model Choice -->
+                    <div class="form-row">
+                        <div class="form-group flex-1">
+                            <label class="form-label" for="select-model-analyst">Mô hình phân tích (Analysts)</label>
+                            <select id="select-model-analyst" class="form-select">
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Khuyên dùng - Nhanh & Sắc bén)</option>
+                                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Tốc độ cao)</option>
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Hạn mức 15 RPM)</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Suy luận sâu)</option>
+                            </select>
+                        </div>
+                        <div class="form-group flex-1">
+                            <label class="form-label" for="select-model-reasoning">Mô hình ra quyết định (Chief Trader)</label>
+                            <select id="select-model-reasoning" class="form-select">
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Khuyên dùng)</option>
+                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
+                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
+                                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Chiến lược gia)</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Test Button & Test Output -->
+                    <div class="test-row">
+                        <button type="button" class="btn-secondary" id="btn-test-key" onclick="testGeminiApiKey()">
+                            <span id="btn-test-key-text">🧪 Kiểm Tra Kết Nối Key</span>
+                        </button>
+                        <div id="test-key-result" class="test-key-result" style="display: none;"></div>
+                    </div>
+                </div>
+
+                <!-- Secondary Providers (Collapsible Accordion) -->
+                <details class="secondary-providers-details">
+                    <summary class="secondary-providers-summary">
+                        <span>Tùy chọn khác: OpenAI / DeepSeek (Không bắt buộc)</span>
+                        <span class="summary-arrow">▼</span>
+                    </summary>
+                    <div class="secondary-providers-content">
+                        <div class="form-group">
+                            <label class="form-label" for="input-openai-key">OpenAI API Key (sk-...)</label>
+                            <input type="password" id="input-openai-key" class="form-input" placeholder="sk-..." autocomplete="off">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label" for="input-deepseek-key">DeepSeek API Key (sk-...)</label>
+                            <input type="password" id="input-deepseek-key" class="form-input" placeholder="sk-..." autocomplete="off">
+                        </div>
+                    </div>
+                </details>
+            </div>
+
+            <div class="modal-footer">
+                <button type="button" class="btn-cancel" onclick="closeSettingsModal()">Đóng</button>
+                <button type="button" class="btn-save" id="btn-save-settings" onclick="saveSettings()">
+                    <span id="btn-save-text">💾 Lưu & Kích Hoạt AI Thật</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- Toast Notification -->
     <div id="toast-box">
         <span id="toast-icon">✓</span>
@@ -1945,6 +2451,8 @@
                         document.getElementById('btn-global-run').disabled = false;
                         updateAllViewsWithCycleData(data);
                         showToast(`Hoàn tất phân tích đa agent cho ${data.symbol}!`);
+                    } else if (data.type === "SETTINGS_UPDATED") {
+                        applySettingsState(data);
                     }
                 } catch (e) {
                     console.error("WS error:", e);
@@ -2601,10 +3109,227 @@
         }
 
         // -------------------------------------------------------------
+        // API SETTINGS & KEY MANAGEMENT
+        // -------------------------------------------------------------
+        let currentSettings = null;
+
+        function openSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'flex';
+            loadSettings();
+        }
+
+        function closeSettingsModal() {
+            document.getElementById('settings-modal').style.display = 'none';
+            document.getElementById('test-key-result').style.display = 'none';
+        }
+
+        function handleModalBackdropClick(event) {
+            if (event.target && event.target.id === 'settings-modal') {
+                closeSettingsModal();
+            }
+        }
+
+        function togglePasswordVisibility(inputId, btn) {
+            const input = document.getElementById(inputId);
+            if (!input) return;
+            if (input.type === 'password') {
+                input.type = 'text';
+                btn.innerText = '🔒';
+            } else {
+                input.type = 'password';
+                btn.innerText = '👁️';
+            }
+        }
+
+        function dismissBanner() {
+            const banner = document.getElementById('mock-warning-banner');
+            if (banner) banner.style.display = 'none';
+        }
+
+        function applySettingsState(st) {
+            const hasGemini = Boolean(st.has_gemini_key);
+            const isMock = Boolean(st.is_mock_mode);
+
+            // Update Header Pill
+            const headerDot = document.getElementById('header-ai-dot');
+            const headerVal = document.getElementById('header-ai-val');
+            const banner = document.getElementById('mock-warning-banner');
+
+            if (hasGemini && !isMock) {
+                if (headerDot) {
+                    headerDot.style.background = 'var(--accent-green)';
+                    headerDot.style.boxShadow = '0 0 8px var(--accent-green)';
+                }
+                if (headerVal) {
+                    headerVal.innerText = 'LIVE AI';
+                    headerVal.className = 'info-pill-val text-green';
+                }
+                if (banner) banner.style.display = 'none';
+            } else {
+                if (headerDot) {
+                    headerDot.style.background = 'var(--accent-amber)';
+                    headerDot.style.boxShadow = '0 0 8px var(--accent-amber)';
+                }
+                if (headerVal) {
+                    headerVal.innerText = 'MOCK LLM';
+                    headerVal.className = 'info-pill-val text-amber';
+                }
+                if (banner) banner.style.display = 'flex';
+            }
+
+            // Update Modal Status Box
+            const modalDot = document.getElementById('modal-status-dot');
+            const modalText = document.getElementById('modal-status-text');
+            if (modalDot && modalText) {
+                if (hasGemini && !isMock) {
+                    modalDot.style.background = 'var(--accent-green)';
+                    modalDot.style.boxShadow = '0 0 8px var(--accent-green)';
+                    modalText.innerHTML = `Đang kết nối: <strong class="text-green">Live Google Gemini</strong> (${st.gemini_key_masked || 'Đã cấu hình'}) • Mô hình: ${st.model_analyst || 'gemini-2.5-flash'}`;
+                } else {
+                    modalDot.style.background = 'var(--accent-amber)';
+                    modalDot.style.boxShadow = '0 0 8px var(--accent-amber)';
+                    modalText.innerHTML = `Trạng thái: <strong class="text-amber">Chế độ Giả lập (Mock LLM)</strong> — Chưa phát hiện API Key hợp lệ.`;
+                }
+            }
+
+            if (st.model_analyst) {
+                const s1 = document.getElementById('select-model-analyst');
+                if (s1 && [...s1.options].some(o => o.value === st.model_analyst)) s1.value = st.model_analyst;
+            }
+            if (st.model_reasoning) {
+                const s2 = document.getElementById('select-model-reasoning');
+                if (s2 && [...s2.options].some(o => o.value === st.model_reasoning)) s2.value = st.model_reasoning;
+            }
+        }
+
+        async function loadSettings() {
+            try {
+                const res = await fetch('/api/settings');
+                if (!res.ok) return;
+                const data = await res.json();
+                currentSettings = data;
+                applySettingsState(data);
+
+                if (data.gemini_key_masked) {
+                    const inp = document.getElementById('input-gemini-key');
+                    if (inp && !inp.value) {
+                        inp.placeholder = `Đang dùng key: ${data.gemini_key_masked} (Nhập key mới nếu muốn đổi)`;
+                    }
+                }
+                if (data.openai_key_masked) {
+                    const inp = document.getElementById('input-openai-key');
+                    if (inp && !inp.value) inp.placeholder = `Đang dùng key: ${data.openai_key_masked}`;
+                }
+                if (data.deepseek_key_masked) {
+                    const inp = document.getElementById('input-deepseek-key');
+                    if (inp && !inp.value) inp.placeholder = `Đang dùng key: ${data.deepseek_key_masked}`;
+                }
+            } catch (e) {
+                console.warn("Could not load settings:", e);
+            }
+        }
+
+        async function testGeminiApiKey() {
+            const keyInput = document.getElementById('input-gemini-key');
+            const modelSelect = document.getElementById('select-model-analyst');
+            const resBox = document.getElementById('test-key-result');
+            const btnText = document.getElementById('btn-test-key-text');
+            const btn = document.getElementById('btn-test-key');
+
+            const keyVal = keyInput.value.trim();
+            const modelVal = modelSelect.value;
+
+            if (!keyVal && (!currentSettings || !currentSettings.has_gemini_key)) {
+                resBox.style.display = 'block';
+                resBox.className = 'test-key-result test-key-error';
+                resBox.innerText = '⚠️ Vui lòng dán Gemini API Key vào ô trên trước khi kiểm tra!';
+                return;
+            }
+
+            btn.disabled = true;
+            btnText.innerText = '⏳ Đang kiểm tra kết nối...';
+            resBox.style.display = 'none';
+
+            try {
+                const res = await fetch('/api/settings/test-key', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        gemini_api_key: keyVal || undefined,
+                        model_name: modelVal
+                    })
+                });
+                const data = await res.json();
+                resBox.style.display = 'block';
+                if (data.success) {
+                    resBox.className = 'test-key-result test-key-success';
+                    resBox.innerHTML = `✓ <strong>Thành công!</strong> ${data.message}`;
+                } else {
+                    resBox.className = 'test-key-result test-key-error';
+                    resBox.innerHTML = `✕ <strong>Thất bại:</strong> ${data.error || 'Lỗi không xác định khi kết nối với Gemini'}`;
+                }
+            } catch (err) {
+                resBox.style.display = 'block';
+                resBox.className = 'test-key-result test-key-error';
+                resBox.innerHTML = `✕ <strong>Lỗi mạng:</strong> ${err.message}`;
+            } finally {
+                btn.disabled = false;
+                btnText.innerText = '🧪 Kiểm Tra Kết Nối Key';
+            }
+        }
+
+        async function saveSettings() {
+            const geminiKey = document.getElementById('input-gemini-key').value.trim();
+            const openaiKey = document.getElementById('input-openai-key').value.trim();
+            const deepseekKey = document.getElementById('input-deepseek-key').value.trim();
+            const modelAnalyst = document.getElementById('select-model-analyst').value;
+            const modelReasoning = document.getElementById('select-model-reasoning').value;
+
+            const saveBtn = document.getElementById('btn-save-settings');
+            const saveText = document.getElementById('btn-save-text');
+
+            saveBtn.disabled = true;
+            saveText.innerText = '⏳ Đang lưu & khởi tạo AI...';
+
+            try {
+                const payload = {
+                    model_analyst: modelAnalyst,
+                    model_debater: modelAnalyst,
+                    model_reasoning: modelReasoning,
+                    default_llm_provider: 'gemini'
+                };
+                if (geminiKey) payload.gemini_api_key = geminiKey;
+                if (openaiKey) payload.openai_api_key = openaiKey;
+                if (deepseekKey) payload.deepseek_api_key = deepseekKey;
+
+                const res = await fetch('/api/settings/save', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Đã lưu cấu hình và kích hoạt AI thành công!');
+                    await loadSettings();
+                    closeSettingsModal();
+                } else {
+                    showToast(data.detail || 'Không thể lưu cài đặt!', false);
+                }
+            } catch (err) {
+                showToast(`Lỗi lưu cài đặt: ${err.message}`, false);
+            } finally {
+                saveBtn.disabled = false;
+                saveText.innerText = '💾 Lưu & Kích Hoạt AI Thật';
+            }
+        }
+
+        // -------------------------------------------------------------
         // INITIALIZATION
         // -------------------------------------------------------------
         window.addEventListener('DOMContentLoaded', () => {
             initWebSocket();
+            loadSettings();
             loadMarketScreener();
             fetchAndRenderCandles(currentSymbol, currentTimeframe);
             fetchHistory();

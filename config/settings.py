@@ -49,6 +49,85 @@ class Settings(BaseSettings):
     def effective_gemini_key(self) -> Optional[str]:
         return self.GEMINI_API_KEY or self.GOOGLE_API_KEY or os.environ.get("GEMINI_API_KEY") or os.environ.get("GOOGLE_API_KEY")
 
+    def save_api_keys(
+        self,
+        gemini_api_key: Optional[str] = None,
+        openai_api_key: Optional[str] = None,
+        deepseek_api_key: Optional[str] = None,
+        default_provider: Optional[str] = None,
+        model_analyst: Optional[str] = None,
+        model_debater: Optional[str] = None,
+        model_reasoning: Optional[str] = None
+    ) -> None:
+        """
+        Saves updated API keys and configurations to .env file and updates runtime memory.
+        """
+        env_path = BASE_DIR / ".env"
+        env_dict = {}
+        if env_path.exists():
+            try:
+                with open(env_path, "r", encoding="utf-8") as f:
+                    for line in f:
+                        line_str = line.strip()
+                        if line_str and not line_str.startswith("#") and "=" in line_str:
+                            k, v = line_str.split("=", 1)
+                            env_dict[k.strip()] = v.strip().strip('"').strip("'")
+            except Exception:
+                pass
+
+        if gemini_api_key is not None:
+            val = gemini_api_key.strip()
+            self.GEMINI_API_KEY = val if val else None
+            self.GOOGLE_API_KEY = val if val else None
+            os.environ["GEMINI_API_KEY"] = val
+            os.environ["GOOGLE_API_KEY"] = val
+            if val:
+                env_dict["GEMINI_API_KEY"] = f'"{val}"'
+                env_dict["GOOGLE_API_KEY"] = f'"{val}"'
+            else:
+                env_dict.pop("GEMINI_API_KEY", None)
+                env_dict.pop("GOOGLE_API_KEY", None)
+
+        if openai_api_key is not None:
+            val = openai_api_key.strip()
+            self.OPENAI_API_KEY = val if val else None
+            os.environ["OPENAI_API_KEY"] = val
+            if val:
+                env_dict["OPENAI_API_KEY"] = f'"{val}"'
+            else:
+                env_dict.pop("OPENAI_API_KEY", None)
+
+        if deepseek_api_key is not None:
+            val = deepseek_api_key.strip()
+            self.DEEPSEEK_API_KEY = val if val else None
+            os.environ["DEEPSEEK_API_KEY"] = val
+            if val:
+                env_dict["DEEPSEEK_API_KEY"] = f'"{val}"'
+            else:
+                env_dict.pop("DEEPSEEK_API_KEY", None)
+
+        if default_provider is not None and default_provider.strip():
+            self.DEFAULT_LLM_PROVIDER = default_provider.strip()
+            env_dict["DEFAULT_LLM_PROVIDER"] = self.DEFAULT_LLM_PROVIDER
+
+        if model_analyst is not None and model_analyst.strip():
+            self.MODEL_ANALYST = model_analyst.strip()
+            env_dict["MODEL_ANALYST"] = self.MODEL_ANALYST
+
+        if model_debater is not None and model_debater.strip():
+            self.MODEL_DEBATER = model_debater.strip()
+            env_dict["MODEL_DEBATER"] = self.MODEL_DEBATER
+
+        if model_reasoning is not None and model_reasoning.strip():
+            self.MODEL_REASONING = model_reasoning.strip()
+            env_dict["MODEL_REASONING"] = self.MODEL_REASONING
+
+        # Write to .env
+        with open(env_path, "w", encoding="utf-8") as f:
+            f.write("# Tauric AI Crypto Agents - Configuration\n")
+            for k, v in env_dict.items():
+                f.write(f"{k}={v}\n")
+
 settings = Settings()
 
 def load_risk_rules() -> Dict[str, Any]:
@@ -59,3 +138,4 @@ def load_risk_rules() -> Dict[str, Any]:
     return {}
 
 RISK_RULES = load_risk_rules()
+

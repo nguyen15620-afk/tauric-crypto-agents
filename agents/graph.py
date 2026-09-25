@@ -41,6 +41,17 @@ class TradingAgentGraph:
         self.workflow = self._build_graph()
         self.app = self.workflow.compile()
 
+    def reload_agents(self):
+        """Reloads all agent instances with the latest LLM configurations and API keys."""
+        self.tech_analyst = TechnicalAnalyst()
+        self.sent_analyst = SentimentAnalyst()
+        self.flow_analyst = OnChainAnalyst()
+        self.validator = BeliefValidator()
+        self.bull_researcher = BullResearcher()
+        self.bear_researcher = BearResearcher()
+        self.trader = ChiefTrader()
+        logger.info("[TradingGraph] All agents reloaded with latest LLM models and API keys.")
+
     # --- Node Definitions ---
 
     def node_fetch_market_data(self, state: TradingAgentState) -> Dict[str, Any]:

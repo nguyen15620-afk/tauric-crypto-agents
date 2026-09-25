@@ -76,6 +76,26 @@ class ConnectionManager:
 manager = ConnectionManager()
 
 
+from pydantic import BaseModel
+
+class SettingsUpdateRequest(BaseModel):
+    gemini_api_key: Optional[str] = None
+    openai_api_key: Optional[str] = None
+    deepseek_api_key: Optional[str] = None
+    default_llm_provider: Optional[str] = None
+    model_analyst: Optional[str] = None
+    model_debater: Optional[str] = None
+    model_reasoning: Optional[str] = None
+
+class SettingsTestKeyRequest(BaseModel):
+    gemini_api_key: Optional[str] = None
+    model_name: Optional[str] = "gemini-2.5-flash"
+
+def mask_key(k: Optional[str]) -> str:
+    if not k or len(k) < 8:
+        return ""
+    return f"{k[:6]}...{k[-4:]}"
+
 # ------------------------------------------------------------------
 # REST Endpoints
 # ------------------------------------------------------------------
@@ -94,6 +114,91 @@ async def get_system_status():
         "has_gemini_key": bool(settings.effective_gemini_key),
         "active_ws_clients": len(manager.active_connections)
     }
+
+@app.get("/api/settings")
+async def get_settings():
+    """Returns current AI provider settings with masked keys."""
+    key = settings.effective_gemini_key
+    return {
+        "has_gemini_key": bool(key),
+        "gemini_key_masked": mask_key(key),
+        "has_openai_key": bool(settings.OPENAI_API_KEY),
+        "openai_key_masked": mask_key(settings.OPENAI_API_KEY),
+        "has_deepseek_key": bool(settings.DEEPSEEK_API_KEY),
+        "deepseek_key_masked": mask_key(settings.DEEPSEEK_API_KEY),
+        "default_llm_provider": settings.DEFAULT_LLM_PROVIDER,
+        "model_analyst": settings.MODEL_ANALYST,
+        "model_debater": getattr(settings, "MODEL_DEBATER", settings.MODEL_ANALYST),
+        "model_reasoning": settings.MODEL_REASONING,
+        "is_mock_mode": not bool(key),
+    }
+
+@app.post("/api/settings/save")
+async def save_settings(req: SettingsUpdateRequest):
+    """Saves updated API keys, reloads AI agents, and broadcasts update."""
+    try:
+        settings.save_api_keys(
+            gemini_api_key=req.gemini_api_key,
+            openai_api_key=req.openai_api_key,
+            deepseek_api_key=req.deepseek_api_key,
+            default_provider=req.default_llm_provider,
+            model_analyst=req.model_analyst,
+            model_debater=req.model_debater,
+            model_reasoning=req.model_reasoning,
+        )
+        trading_graph.reload_agents()
+        logger.info("Updated API keys and reloaded agents.")
+        
+        # Broadcast status update to all connected WebSocket clients
+        await manager.broadcast({
+            "type": "SETTINGS_UPDATED",
+            "has_gemini_key": bool(settings.effective_gemini_key),
+            "model_analyst": settings.MODEL_ANALYST,
+            "model_reasoning": settings.MODEL_REASONING,
+            "is_mock_mode": not bool(settings.effective_gemini_key),
+        })
+
+        return {
+            "success": True,
+            "message": "Đã lưu cài đặt API Key thành công!",
+            "has_gemini_key": bool(settings.effective_gemini_key),
+            "gemini_key_masked": mask_key(settings.effective_gemini_key),
+            "is_mock_mode": not bool(settings.effective_gemini_key),
+        }
+    except Exception as e:
+        logger.error(f"Failed to save settings: {e}")
+        raise HTTPException(status_code=500, detail=f"Lỗi khi lưu cài đặt: {e}")
+
+@app.post("/api/settings/test-key")
+async def test_api_key(req: SettingsTestKeyRequest):
+    """Validates a Gemini API Key by sending a test prompt to Google Gemini."""
+    test_key = (req.gemini_api_key or "").strip() or settings.effective_gemini_key
+    if not test_key:
+        raise HTTPException(status_code=400, detail="Vui lòng nhập API Key để kiểm tra.")
+    
+    test_model = (req.model_name or "").strip() or settings.MODEL_ANALYST or "gemini-2.5-flash"
+    try:
+        from langchain_google_genai import ChatGoogleGenerativeAI
+        llm = ChatGoogleGenerativeAI(
+            model=test_model,
+            google_api_key=test_key,
+            temperature=0.1,
+            max_retries=1
+        )
+        res = await asyncio.to_thread(llm.invoke, "Respond ONLY with the exact word: OK")
+        reply_txt = str(res.content).strip()
+        return {
+            "success": True,
+            "message": f"Kết nối Google Gemini API thành công! Mô hình '{test_model}' đã phản hồi: '{reply_txt}'.",
+            "model": test_model
+        }
+    except Exception as e:
+        logger.warning(f"Gemini API key validation failed: {e}")
+        return {
+            "success": False,
+            "error": f"Kết nối không thành công: {str(e)}",
+            "model": test_model
+        }
 
 
 @app.get("/api/market")
