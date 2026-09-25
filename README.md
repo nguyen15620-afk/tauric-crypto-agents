@@ -59,8 +59,8 @@ pip install -r requirements.txt
 Tạo file `.env` từ `.env.example`:
 ```env
 GEMINI_API_KEY="AIzaSy..."
-MODEL_ANALYST="gemini-2.5-flash-lite"
-MODEL_REASONING="gemini-2.5-flash"
+MODEL_ANALYST="gemini-3.5-flash-lite"
+MODEL_REASONING="gemini-3.8-flash"
 ```
 
 ### 3. Chạy 1 Chu Kỳ Phân Tích (Advisory Mode CLI)
@@ -68,18 +68,30 @@ MODEL_REASONING="gemini-2.5-flash"
 python main.py --mode advisory --symbol BTC/USDT --timeframe 15m
 ```
 
-### 4. Khởi Chạy Web Dashboard Trực Quan (Server Mode)
+### 4. Quét Top Cơ Hội Bùng Nổ Thị Trường (Market Screener)
+```bash
+python main.py --mode scan
+```
+
+### 5. Khởi Chạy Web Dashboard Trực Tuyến (Server Mode)
 ```bash
 python main.py --mode server --port 8000
 ```
-Mở trình duyệt tại: `http://localhost:8000`
+- Mở tại máy local: `http://localhost:8000`
+- Xem trực tiếp từ xa (Public Web): `https://mercury-sleep-meetings-bear.trycloudflare.com`
 
-### 5. Chạy Backtest Lịch Sử & Đo Chi Phí Token
+### 6. Đồng Bộ 1-Click Lên GitHub & Cloud Khi Có Cập Nhật Mới
+Mỗi khi bạn sửa đổi hoặc cập nhật tính năng mới, chỉ cần chạy 1 lệnh duy nhất:
 ```bash
-python main.py --mode backtest --symbol BTC/USDT
+python sync_github.py "Tóm tắt nội dung cập nhật mới"
+```
+Hệ thống sẽ tự động:
+1. Chạy toàn bộ 18 bài test kiểm thử chất lượng code.
+2. Tự động đóng gói commit và push lên GitHub nhánh `main`.
+3. Kích hoạt GitHub Actions CI/CD và cập nhật ứng dụng Web.
+
+### 7. Chạy Kiểm Thử Tự Động (Unit Tests)
+```bash
+python -m pytest -v
 ```
 
-### 6. Chạy Kiểm Thử Tự Động (Unit Tests)
-```bash
-python -m unittest discover tests
-```
