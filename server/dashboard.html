@@ -2307,21 +2307,28 @@
                         <div class="form-group flex-1">
                             <label class="form-label" for="select-model-analyst">Mô hình phân tích (Analysts)</label>
                             <select id="select-model-analyst" class="form-select">
-                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Khuyên dùng - Nhanh & Sắc bén)</option>
-                                <option value="gemini-2.0-flash">Gemini 2.0 Flash (Tốc độ cao)</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash (Hạn mức 15 RPM)</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Suy luận sâu)</option>
+                                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (500 RPD, 15 RPM - Khuyên dùng)</option>
+                                <option value="gemini-3.1-flash-lite">Gemini 3.1 Flash Lite (500 RPD, 15 RPM)</option>
+                                <option value="gemini-2.5-flash-lite">Gemini 2.5 Flash Lite (20 RPD, 10 RPM)</option>
+                                <option value="gemma-4-31b">Gemma 4 31B (14.4K RPD, 30 RPM - Siêu bền)</option>
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (20 RPD, 5 RPM)</option>
                             </select>
                         </div>
                         <div class="form-group flex-1">
                             <label class="form-label" for="select-model-reasoning">Mô hình ra quyết định (Chief Trader)</label>
                             <select id="select-model-reasoning" class="form-select">
-                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (Khuyên dùng)</option>
-                                <option value="gemini-2.0-flash">Gemini 2.0 Flash</option>
-                                <option value="gemini-1.5-flash">Gemini 1.5 Flash</option>
-                                <option value="gemini-1.5-pro">Gemini 1.5 Pro (Chiến lược gia)</option>
+                                <option value="gemini-3.8-flash">Gemini 3.8 Flash (20 RPD, 5 RPM - Khuyên dùng: Suy luận đỉnh)</option>
+                                <option value="gemini-3.7-flash">Gemini 3.7 Flash (20 RPD, 5 RPM)</option>
+                                <option value="gemini-3.6-flash">Gemini 3.6 Flash (20 RPD, 5 RPM)</option>
+                                <option value="gemini-3.5-flash">Gemini 3.5 Flash (20 RPD, 5 RPM)</option>
+                                <option value="gemini-3-flash">Gemini 3 Flash (20 RPD, 5 RPM)</option>
+                                <option value="gemini-2.5-flash">Gemini 2.5 Flash (20 RPD, 5 RPM)</option>
+                                <option value="gemini-3.5-flash-lite">Gemini 3.5 Flash Lite (500 RPD - Dự phòng)</option>
                             </select>
                         </div>
+                    </div>
+                    <div style="font-size: 11.5px; color: #94a3b8; background: rgba(59, 130, 246, 0.08); padding: 8px 12px; border-radius: 6px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                        ⚡ <strong>Cơ chế Auto-Cascading Fallback:</strong> Nếu mô hình đang chọn bị chạm hạn mức (429/RPD Limit), hệ thống sẽ <em>tự động chuyển mượt sang mô hình kế tiếp</em> trong danh sách mà không làm gián đoạn phiên phân tích!
                     </div>
 
                     <!-- Test Button & Test Output -->

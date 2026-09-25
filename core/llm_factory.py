@@ -49,50 +49,107 @@ _ANALYST_LIMITER = _RateLimiter(calls_per_minute=12)   # Flash Lite: 15 RPM, lea
 _DEBATER_LIMITER = _RateLimiter(calls_per_minute=12)   # Flash Lite: 15 RPM, leave buffer
 _REASONING_LIMITER = _RateLimiter(calls_per_minute=4)  # Flash: 5 RPM, leave buffer
 
+# Shared model cascade chains tailored to user's exact API quotas
+ANALYST_MODEL_CASCADE = [
+    "gemini-3.5-flash-lite",  # 15 RPM, 500 RPD (Primary workhorse)
+    "gemini-3.1-flash-lite",  # 15 RPM, 500 RPD (Backup workhorse)
+    "gemini-2.5-flash-lite",  # 10 RPM, 20 RPD
+    "gemma-4-31b",            # 30 RPM, 14.4K RPD (High throughput fallback)
+    "gemini-2.5-flash",       # Standard Flash
+]
 
-class _RateLimitedLLM:
+DEBATER_MODEL_CASCADE = [
+    "gemini-3.5-flash-lite",  # 15 RPM, 500 RPD
+    "gemini-3.1-flash-lite",  # 15 RPM, 500 RPD
+    "gemini-2.5-flash-lite",  # 10 RPM, 20 RPD
+    "gemini-2.5-flash",       # Standard Flash
+]
+
+TRADER_MODEL_CASCADE = [
+    "gemini-3.8-flash",       # 5 RPM, 20 RPD (Top strategic reasoning)
+    "gemini-3.7-flash",       # 5 RPM, 20 RPD (Fallback 1)
+    "gemini-3.6-flash",       # 5 RPM, 20 RPD (Fallback 2)
+    "gemini-3.5-flash",       # 5 RPM, 20 RPD (Fallback 3)
+    "gemini-3-flash",         # 5 RPM, 20 RPD (Fallback 4)
+    "gemini-2.5-flash",       # 5 RPM, 20 RPD (Fallback 5)
+    "gemini-3.5-flash-lite",  # 15 RPM, 500 RPD (High-capacity fallback)
+]
+
+
+class _CascadingRateLimitedLLM:
     """
-    Wrapper around a LangChain LLM that enforces rate limiting and
-    exponential backoff on 429/resource-exhausted errors.
+    Intelligent Cascading Wrapper around Google Gemini models with rate limiting,
+    automatic fallback across model tiers when 429 / RESOURCE_EXHAUSTED occurs,
+    and safe fallback to MockLLM if all API models are temporarily exhausted.
     """
 
-    MAX_RETRIES = 3
-    BACKOFF_BASE = 3.0  # seconds
-
-    def __init__(self, llm, limiter: _RateLimiter, model_name: str):
-        self._llm = llm
+    def __init__(
+        self,
+        api_key: str,
+        candidates: list,
+        limiter: _RateLimiter,
+        role: AgentRole,
+        temperature: float = 0.2
+    ):
+        self._api_key = api_key
+        # Preserve candidate order without duplicates
+        self._candidates = list(dict.fromkeys(candidates))
         self._limiter = limiter
-        self._model_name = model_name
+        self.role = role
+        self.temperature = temperature
+        self._mock = MockLLM(role=role)
+        self._exhausted: set = set()
 
     def invoke(self, messages: Any) -> Any:
-        for attempt in range(self.MAX_RETRIES):
+        from langchain_google_genai import ChatGoogleGenerativeAI
+
+        for model_name in self._candidates:
+            if model_name in self._exhausted:
+                continue
+
             self._limiter.wait_if_needed()
             try:
-                return self._llm.invoke(messages)
+                raw_llm = ChatGoogleGenerativeAI(
+                    model=model_name,
+                    google_api_key=self._api_key,
+                    temperature=self.temperature,
+                    max_retries=1,
+                )
+                return raw_llm.invoke(messages)
             except Exception as e:
                 err_str = str(e).lower()
                 is_rate_limit = any(kw in err_str for kw in ["429", "resource_exhausted", "quota", "rate limit"])
-                if is_rate_limit and attempt < self.MAX_RETRIES - 1:
-                    wait_time = self.BACKOFF_BASE * (2 ** attempt)  # 3s, 6s, 12s
+                is_not_found = any(kw in err_str for kw in ["404", "not found", "not supported", "is not found"])
+
+                if is_rate_limit or is_not_found:
                     logger.warning(
-                        f"[{self._model_name}] Rate limit hit (attempt {attempt + 1}/{self.MAX_RETRIES}). "
-                        f"Retrying in {wait_time:.0f}s..."
+                        f"[{self.role.value}] Model '{model_name}' hit limit or unavailable ({e}). "
+                        f"Auto-switching to next model in cascade..."
                     )
-                    time.sleep(wait_time)
+                    self._exhausted.add(model_name)
+                    continue
                 else:
-                    raise  # re-raise non-rate-limit errors or final attempt
-        raise RuntimeError(f"[{self._model_name}] All {self.MAX_RETRIES} retries exhausted.")
+                    logger.error(f"[{self.role.value}] Model '{model_name}' unexpected error: {e}")
+                    raise
+
+        # If all candidates exhausted, gracefully fallback to heuristic MockLLM
+        logger.warning(
+            f"[{self.role.value}] All models in cascade {self._candidates} temporarily exhausted. "
+            f"Gracefully falling back to heuristic MockLLM to avoid system failure."
+        )
+        return self._mock.invoke(messages)
 
 
 class LLMFactory:
     """
     Unified LLM Factory supporting:
     - Tiered Google Gemini model routing tailored for rate limits and quotas:
-        * Analysts: Gemini Flash Lite (high RPM, lower cost) — suitable for parallel calls
-        * Debaters & Chief Trader: Gemini Flash (slower, deeper reasoning)
-    - Built-in rate limiter to prevent 429 errors on free tier
-    - Exponential backoff retry on quota exhaustion
-    - Fallback MockLLM for zero-cost dry-run / integration testing
+        * Analysts: Gemini Flash Lite (high RPM, 500 RPD) — parallel execution
+        * Debaters: Gemini Flash Lite (fast, 500 RPD)
+        * Chief Trader: Gemini 3.8/3.7/3.6/3.5/3/2.5 Flash (deep strategic reasoning)
+    - Automatic cascading fallback when 429 quota is reached
+    - Built-in rate limiter to prevent burst 429 errors
+    - Fallback MockLLM for zero-cost dry-run or when all limits are reached
     """
 
     @staticmethod
@@ -107,31 +164,31 @@ class LLMFactory:
     @classmethod
     def get_chat_model(cls, role: AgentRole = AgentRole.ANALYST, temperature: float = 0.2):
         api_key = settings.effective_gemini_key
-        model_name = cls.get_model_name_for_role(role)
 
         if api_key:
             try:
-                from langchain_google_genai import ChatGoogleGenerativeAI
-                logger.info(f"Initializing Gemini model={model_name} for role={role.value}")
-                raw_llm = ChatGoogleGenerativeAI(
-                    model=model_name,
-                    google_api_key=api_key,
-                    temperature=temperature,
-                    max_retries=1,  # We handle retries ourselves in _RateLimitedLLM
-                )
-
-                # Choose limiter based on role tier
                 if role == AgentRole.ANALYST:
+                    user_pref = getattr(settings, "MODEL_ANALYST", "gemini-3.5-flash-lite")
+                    candidates = [user_pref] + ANALYST_MODEL_CASCADE
                     limiter = _ANALYST_LIMITER
                 elif role == AgentRole.DEBATER:
+                    user_pref = getattr(settings, "MODEL_DEBATER", "gemini-3.5-flash-lite")
+                    candidates = [user_pref] + DEBATER_MODEL_CASCADE
                     limiter = _DEBATER_LIMITER
                 else:
+                    user_pref = getattr(settings, "MODEL_REASONING", "gemini-3.8-flash")
+                    candidates = [user_pref] + TRADER_MODEL_CASCADE
                     limiter = _REASONING_LIMITER
 
-                return _RateLimitedLLM(raw_llm, limiter, model_name)
-
+                return _CascadingRateLimitedLLM(
+                    api_key=api_key,
+                    candidates=candidates,
+                    limiter=limiter,
+                    role=role,
+                    temperature=temperature
+                )
             except Exception as e:
-                logger.warning(f"Failed to initialize ChatGoogleGenerativeAI ({e}), falling back to MockLLM")
+                logger.warning(f"Failed to initialize CascadingLLM ({e}), falling back to MockLLM")
                 return MockLLM(role=role)
         else:
             logger.info("No GEMINI_API_KEY detected. Using MockLLM for dry-run simulation.")
