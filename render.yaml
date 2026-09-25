@@ -1,0 +1,15 @@
+services:
+  - type: web
+    name: tauric-crypto-agents
+    env: docker
+    plan: free
+    region: singapore
+    dockerfilePath: Dockerfile
+    autoDeploy: true
+    envVars:
+      - key: PORT
+        value: 8000
+      - key: DEFAULT_SYMBOL
+        value: BTC/USDT
+      - key: GEMINI_API_KEY
+        sync: false
