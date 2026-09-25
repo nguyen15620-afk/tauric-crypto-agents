@@ -19,7 +19,7 @@ if sys.platform == "win32":
 
 def run_cmd(cmd, check=True):
     print(f"⚙️  Executing: {cmd}")
-    res = subprocess.run(cmd, shell=True, text=True, capture_output=True)
+    res = subprocess.run(cmd, shell=True, text=True, capture_output=True, encoding="utf-8", errors="replace")
     if check and res.returncode != 0:
         print(f"❌ Error ({res.returncode}):\n{res.stderr.strip() or res.stdout.strip()}")
         sys.exit(res.returncode)
@@ -39,7 +39,7 @@ def main():
         
         # 2. Run unit tests before pushing to ensure quality
         print("🧪 Đang chạy kiểm thử tự động (Unit Tests)...")
-        test_res = subprocess.run([sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True)
+        test_res = subprocess.run([sys.executable, "-m", "pytest", "-q"], capture_output=True, text=True, encoding="utf-8", errors="replace")
         if test_res.returncode != 0:
             print("⚠️  Một số test bị lỗi. Vui lòng kiểm tra trước khi push:")
             print(test_res.stdout or test_res.stderr)
