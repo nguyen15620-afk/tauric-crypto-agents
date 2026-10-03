@@ -73,12 +73,21 @@ python main.py --mode advisory --symbol BTC/USDT --timeframe 15m
 python main.py --mode scan
 ```
 
-### 5. Khởi Chạy Web Dashboard Trực Tuyến (Server Mode)
+### 5. Khởi Chạy Web Dashboard
+
+#### A. Triển Khai Lên Đám Mây Chạy 24/7 Cố Định (Render Cloud - Miễn Phí)
+Bấm nút bên dưới để đưa hệ thống lên mạng chạy 24/7, bạn có thể truy cập bằng điện thoại hoặc máy tính từ bất kỳ đâu:
+
+[![Deploy to Render](https://render.com/images/deploy-to-render-button.svg)](https://render.com/deploy?repo=https://github.com/nguyen15620-afk/tauric-crypto-agents)
+
+> Hoặc vào **[dashboard.render.com](https://dashboard.render.com)** -> Chọn **New +** -> **Blueprint** -> Chọn repository `nguyen15620-afk/tauric-crypto-agents` -> Nhấn **Apply**.
+> Render sẽ cấp cho bạn đường link cố định vĩnh viễn (ví dụ: `https://tauric-crypto-agents.onrender.com`).
+
+#### B. Khởi Chạy Trực Tiếp Tại Máy Local
 ```bash
 python main.py --mode server --port 8000
 ```
-- Mở tại máy local: `http://localhost:8000`
-- Xem trực tiếp từ xa (Public Web): `https://mercury-sleep-meetings-bear.trycloudflare.com`
+- Mở tại trình duyệt: `http://localhost:8000`
 
 ### 6. Đồng Bộ 1-Click Lên GitHub & Cloud Khi Có Cập Nhật Mới
 Mỗi khi bạn sửa đổi hoặc cập nhật tính năng mới, chỉ cần chạy 1 lệnh duy nhất:
